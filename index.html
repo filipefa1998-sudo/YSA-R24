@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#101b30">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="YSA Record">
+<title>YSA Ward Record — Riverton 24th</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,720&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Pacific Noir — YSA "Horizon" variant */
+  --ink:#0c1526;            /* page base */
+  --ink-2:#101b30;          /* raised panels */
+  --ink-3:#182742;          /* cards */
+  --line:#25375c;           /* hairlines */
+  --cream:#f3eddd;          /* primary text */
+  --cream-dim:#b9b3a2;      /* secondary text */
+  --gold:#e3b34f;           /* Sacred Stone gold */
+  --gold-deep:#b8862e;
+  --horizon:#46c2b5;        /* YSA accent — ocean teal */
+  --horizon-deep:#2a8d84;
+  --coral:#e5735a;          /* alerts / flags */
+  --ok:#7fc98f;
+  --radius:14px;
+  --font-display:"Fraunces",Georgia,serif;
+  --font-body:"Public Sans",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--ink);
+  color:var(--cream);
+  font-family:var(--font-body);
+  font-size:15px;line-height:1.55;
+  min-height:100vh;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+::selection{background:var(--horizon-deep);color:var(--cream)}
+
+/* ---------- Tapa horizon band (signature) ---------- */
+.tapa-band{
+  height:10px;width:100%;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--gold) 0 14px, transparent 14px 20px,
+      var(--horizon) 20px 26px, transparent 26px 40px);
+  opacity:.85;
+}
+
+/* ---------- Auth gate ---------- */
+#authView{max-width:420px;margin:0 auto;padding:9vh 22px 40px;text-align:center}
+.auth-mark{
+  width:74px;height:74px;margin:0 auto 18px;border-radius:50%;
+  border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:26px;color:var(--gold);
+  background:radial-gradient(circle at 30% 25%, #1d2f52, var(--ink-2));
+}
+#authView h1{font-family:var(--font-display);font-weight:650;font-size:29px;letter-spacing:.2px;margin-bottom:4px}
+#authView .sub{color:var(--cream-dim);font-size:13.5px;margin-bottom:6px}
+#authView .confid{color:var(--gold);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:26px}
+.field{margin-bottom:12px;text-align:left}
+.field label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream-dim);margin-bottom:5px}
+input,select,textarea{
+  width:100%;background:var(--ink-3);border:1px solid var(--line);color:var(--cream);
+  border-radius:10px;padding:11px 13px;font-size:15px;font-family:var(--font-body);
+}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--horizon);outline-offset:1px}
+textarea{min-height:74px;resize:vertical}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:10px;cursor:pointer;
+  font-family:var(--font-body);font-weight:600;font-size:14.5px;
+  padding:11px 18px;transition:filter .15s, transform .05s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#221703;width:100%}
+.btn-teal{background:linear-gradient(135deg,var(--horizon),var(--horizon-deep));color:#04211e}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream)}
+.btn-danger{background:transparent;border:1px solid var(--coral);color:var(--coral)}
+.btn:hover{filter:brightness(1.08)}
+.linkish{background:none;border:none;color:var(--horizon);cursor:pointer;font-size:13px;margin-top:14px;text-decoration:underline;text-underline-offset:3px}
+.auth-err{color:var(--coral);font-size:13px;min-height:18px;margin-top:10px}
+
+/* ---------- App shell ---------- */
+#appView{display:none}
+header.app{
+  position:sticky;top:0;z-index:40;background:rgba(16,27,48,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.app-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;max-width:1180px;margin:0 auto}
+.app-bar .mark{
+  width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gold);flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);color:var(--gold);font-size:14px;
+}
+.app-bar h1{font-family:var(--font-display);font-weight:650;font-size:17px;letter-spacing:.2px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-bar .who{font-size:11.5px;color:var(--cream-dim);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 10px 0;max-width:1180px;margin:0 auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{
+  background:none;border:none;color:var(--cream-dim);font-family:var(--font-body);font-weight:600;font-size:13.5px;
+  padding:10px 13px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;
+}
+nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold)}
+main{max-width:1180px;margin:0 auto;padding:22px 16px 90px}
+section.tab{display:none}
+section.tab.active{display:block}
+h2.sec{font-family:var(--font-display);font-weight:650;font-size:24px;margin-bottom:4px}
+p.sec-sub{color:var(--cream-dim);font-size:13.5px;margin-bottom:18px}
+
+/* ---------- Dashboard ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{
+  background:linear-gradient(160deg,var(--ink-3),var(--ink-2));
+  border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 13px;
+  cursor:pointer;transition:border-color .15s;
+}
+.card:hover{border-color:var(--gold-deep)}
+.card h3{font-family:var(--font-display);font-weight:650;font-size:16px;color:var(--gold);margin-bottom:10px}
+.card .stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-top:1px dashed var(--line);font-size:13.5px}
+.card .stat-row:first-of-type{border-top:none}
+.card .stat-row .lbl{color:var(--cream-dim)}
+.card .stat-row .val{font-family:var(--font-display);font-size:17px;font-weight:650}
+.val.warn{color:var(--coral)} .val.good{color:var(--ok)} .val.teal{color:var(--horizon)}
+.dash-foot{margin-top:20px;font-size:13px}
+.dash-foot a{color:var(--horizon)}
+
+/* ---------- Members ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.chip{
+  background:var(--ink-3);border:1px solid var(--line);color:var(--cream-dim);
+  border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.chip.active{background:var(--horizon-deep);border-color:var(--horizon);color:var(--cream)}
+.search-wrap{margin-bottom:12px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--ink-2)}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:13px}
+thead th{
+  position:sticky;top:0;background:var(--ink-3);color:var(--gold);text-align:left;
+  font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody td{padding:9px 10px;border-bottom:1px solid #1b2a48;vertical-align:top}
+tbody tr:hover{background:#14223c}
+tbody tr{cursor:pointer}
+td .nm{font-weight:600;color:var(--cream)}
+td .mut{color:var(--cream-dim);font-size:11.5px}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+.p-ok{background:#173c2a;color:var(--ok)} .p-warn{background:#3f1f18;color:var(--coral)}
+.p-gold{background:#3a2d10;color:var(--gold)} .p-teal{background:#0f3532;color:var(--horizon)}
+.p-dim{background:#1b2a48;color:var(--cream-dim)}
+.empty{padding:34px;text-align:center;color:var(--cream-dim)}
+
+/* ---------- Reports ---------- */
+.report{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.report h3{font-family:var(--font-display);font-size:17px;color:var(--gold);margin-bottom:8px}
+.report ul{list-style:none}
+.report li{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;cursor:pointer}
+.report li:last-child{border-bottom:none}
+.report li .why{color:var(--cream-dim);font-size:12px}
+.rep-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.rep-stat{background:var(--ink-3);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.rep-stat .n{font-family:var(--font-display);font-size:22px;font-weight:650;color:var(--gold)}
+.rep-stat .l{font-size:11px;color:var(--cream-dim);text-transform:uppercase;letter-spacing:.05em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.seg button{background:var(--ink-3);border:none;color:var(--cream-dim);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.seg button.active{background:var(--horizon-deep);color:var(--cream)}
+
+/* ---------- History ---------- */
+.hist-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;margin-bottom:18px}
+.bars{display:flex;align-items:flex-end;gap:14px;height:140px;padding:10px 4px 0;border-bottom:1px solid var(--line);margin-bottom:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.bar{width:70%;max-width:54px;background:linear-gradient(180deg,var(--gold),var(--gold-deep));border-radius:5px 5px 0 0;min-height:3px}
+.bar-lbl{font-size:11px;color:var(--cream-dim)}
+.bar-n{font-family:var(--font-display);font-size:14px;color:var(--gold)}
+.hist-list li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px;flex-wrap:wrap}
+
+/* ---------- Settings ---------- */
+.set-block{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.set-block h3{font-family:var(--font-display);font-size:16px;color:var(--gold);margin-bottom:8px}
+.set-block p{font-size:13.5px;color:var(--cream-dim);margin-bottom:10px}
+.set-block code{color:var(--horizon);font-size:12.5px}
+
+/* ---------- Modal ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(5,10,20,.72);display:none;z-index:60;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:680px;
+  padding:20px;margin-bottom:6vh;
+}
+.modal h3{font-family:var(--font-display);font-size:20px;margin-bottom:14px}
+.modal .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.modal .grid .full{grid-column:1 / -1}
+.modal .m-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.close-x{float:right;background:none;border:none;color:var(--cream-dim);font-size:20px;cursor:pointer}
+@media(max-width:560px){.modal .grid{grid-template-columns:1fr}}
+
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--ink-3);border:1px solid var(--gold);color:var(--cream);
+  border-radius:10px;padding:10px 18px;font-size:13.5px;z-index:80;display:none;max-width:90vw;
+}
+
+/* ---------- Print ---------- */
+@media print{
+  body{background:#fff;color:#111;font-size:12px}
+  header.app,.toolbar,.chips,.search-wrap,.seg,.no-print,.tapa-band,nav.tabs{display:none !important}
+  section.tab{display:none}
+  section.tab.active{display:block}
+  .report,.table-wrap,.set-block,.card{background:#fff;border-color:#bbb;color:#111}
+  .report h3,.card h3{color:#111}
+  .report li .why,td .mut,.rep-stat .l{color:#555}
+  thead th{background:#eee;color:#111;position:static}
+  tbody td{border-color:#ddd}
+  .pill{border:1px solid #999;background:#fff !important;color:#111 !important}
+  main{max-width:none;padding:0}
+  .rep-stat .n{color:#111}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="tapa-band" aria-hidden="true"></div>
+
+<!-- ================= AUTH ================= -->
+<div id="authView">
+  <div class="auth-mark">YSA</div>
+  <h1>YSA Ward Record</h1>
+  <div class="sub">Riverton 24th Ward — Young Single Adults</div>
+  <div class="confid">Held in confidence — authorized leaders only</div>
+  <div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username"></div>
+  <div class="field"><label for="authPass">Password</label><input id="authPass" type="password" autocomplete="current-password"></div>
+  <button class="btn btn-gold" id="btnSignIn">Sign In</button>
+  <div class="auth-err" id="authErr"></div>
+  <button class="linkish" id="btnForgot">Forgot password?</button>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="appView">
+<header class="app">
+  <div class="app-bar">
+    <div class="mark">YSA</div>
+    <h1>YSA Ward Record</h1>
+    <span class="who" id="whoAmI"></span>
+    <button class="btn btn-ghost" id="btnSignOut" style="padding:7px 12px;font-size:12.5px">Sign Out</button>
+  </div>
+  <nav class="tabs" id="tabsNav">
+    <button data-tab="dash" class="active">Dashboard</button>
+    <button data-tab="members">Members</button>
+    <button data-tab="review">Meeting Review</button>
+    <button data-tab="plan">Plan of Action</button>
+    <button data-tab="history">History</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+</header>
+
+<main>
+<!-- ===== Dashboard ===== -->
+<section class="tab active" id="tab-dash">
+  <h2 class="sec">Committee Overview</h2>
+  <p class="sec-sub">Tap any card to open the matching list of young single adults.</p>
+  <div class="cards" id="dashCards"></div>
+  <div class="dash-foot no-print">
+    <a href="https://filipefa1998-sudo.github.io/focus5-tracker/" target="_blank" rel="noopener">Open the Focus 5 Tracker ↗</a>
+    &nbsp;·&nbsp;
+    <a href="https://filipefa1998-sudo.github.io/EQ-R24-Quorum-Record/" target="_blank" rel="noopener">Elders Quorum Record ↗</a>
+  </div>
+</section>
+
+<!-- ===== Members ===== -->
+<section class="tab" id="tab-members">
+  <h2 class="sec">Members</h2>
+  <p class="sec-sub">Every YSA (18–30) on ward records or living in boundaries — plus friends of the ward.</p>
+  <div class="toolbar no-print">
+    <button class="btn btn-teal" id="btnAdd">+ Add YSA</button>
+    <button class="btn btn-ghost" id="btnCsv">Export CSV (Excel)</button>
+    <button class="btn btn-ghost" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <div class="search-wrap no-print"><input id="search" type="search" placeholder="Search by name, school, calling, notes…"></div>
+  <div class="chips no-print" id="filterChips"></div>
+  <div class="table-wrap">
+    <table id="tbl">
+      <thead><tr>
+        <th>Name</th><th>Age</th><th>Attends</th><th>Activity</th><th>Mission</th>
+        <th>Priesthood</th><th>Recommend</th><th>Next Ordinance</th><th>Institute</th><th>Calling</th><th>Flags</th>
+      </tr></thead>
+      <tbody id="tblBody"></tbody>
+    </table>
+    <div class="empty" id="tblEmpty" style="display:none">No one matches this view. Clear filters or add a YSA.</div>
+  </div>
+</section>
+
+<!-- ===== Meeting Review ===== -->
+<section class="tab" id="tab-review">
+  <h2 class="sec">Meeting Review</h2>
+  <p class="sec-sub">Tap any name to edit. Use Print for a ward-council or bishopric-youth-discussion copy.</p>
+  <div class="no-print" style="margin-bottom:6px">
+    <div class="seg" id="reviewSeg">
+      <button data-mode="full" class="active">Full report (stats + everyone)</button>
+      <button data-mode="prio">Priorities + follow-up only</button>
+    </div>
+    <button class="btn btn-ghost" onclick="window.print()" style="margin-left:8px">Print / Save as PDF</button>
+  </div>
+  <div id="reviewBody"></div>
+</section>
+
+<!-- ===== Plan of Action ===== -->
+<section class="tab" id="tab-plan">
+  <h2 class="sec">Plan of Action</h2>
+  <p class="sec-sub">Auto-built from your records. Tap any name to edit. Print for council or companionship planning.</p>
+  <button class="btn btn-ghost no-print" onclick="window.print()" style="margin-bottom:14px">Print / Save as PDF</button>
+  <div id="planBody"></div>
+</section>
+
+<!-- ===== History ===== -->
+<section class="tab" id="tab-history">
+  <h2 class="sec">History &amp; Trends</h2>
+  <p class="sec-sub">Each entry is stamped with its date, so quarter-over-quarter trends build over time.</p>
+  <div class="report no-print">
+    <h3>Log a Milestone</h3>
+    <div class="hist-form">
+      <div class="field"><label>Name</label><input id="histName" list="histNames" placeholder="Start typing…"><datalist id="histNames"></datalist></div>
+      <div class="field"><label>Milestone</label>
+        <select id="histType">
+          <option value="baptism">Baptism &amp; confirmation</option>
+          <option value="aaronic">Aaronic Priesthood</option>
+          <option value="melchizedek">Melchizedek Priesthood</option>
+          <option value="endowment">Endowment</option>
+          <option value="sealing">Sealing</option>
+          <option value="mission_call">Mission call received</option>
+          <option value="mission_depart">Entered the mission field</option>
+          <option value="mission_return">Returned with honor</option>
+          <option value="recommend">Temple recommend issued / renewed</option>
+          <option value="institute">Institute enrollment / completion</option>
+          <option value="calling">Calling extended</option>
+          <option value="reactivation">Returned to activity</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Date</label><input id="histDate" type="date"></div>
+      <div class="field"><label>Note (optional)</label><input id="histNote" placeholder="e.g., Oquirrh Mountain Temple"></div>
+      <button class="btn btn-teal" id="btnHistAdd">Add to history</button>
+    </div>
+  </div>
+  <button class="btn btn-ghost no-print" onclick="window.print()" style="margin-bottom:14px">Print / Save as PDF</button>
+  <div class="report">
+    <h3>Milestones by Quarter</h3>
+    <div class="bars" id="histBars"></div>
+  </div>
+  <div class="report">
+    <h3>Log</h3>
+    <ul class="hist-list" id="histList"></ul>
+  </div>
+</section>
+
+<!-- ===== Settings ===== -->
+<section class="tab" id="tab-settings">
+  <h2 class="sec">Settings</h2>
+  <div class="set-block">
+    <h3>Where your data lives</h3>
+    <p>YSA records are stored in your private Firebase project and synced live across the committee. Access requires a signed-in, authorized account, enforced by Firestore security rules. The session signs out automatically after 30 minutes of inactivity.</p>
+  </div>
+  <div class="set-block">
+    <h3>Signed In</h3>
+    <p>Account: <strong id="setAccount">—</strong></p>
+    <button class="btn btn-ghost" id="btnPwReset">Send password reset email</button>
+  </div>
+  <div class="set-block">
+    <h3>Backup &amp; Migration</h3>
+    <p>Export a JSON backup of all records and history, or import records into the cloud.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="btnBackup">Export backup</button>
+      <button class="btn btn-ghost" id="btnImport">Import into cloud</button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
+  </div>
+</section>
+</main>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="close-x" id="btnModalX" aria-label="Close">✕</button>
+    <h3 id="modalTitle">Add YSA</h3>
+    <div class="grid">
+      <div class="field"><label>Full name</label><input id="fName"></div>
+      <div class="field"><label>Gender</label><select id="fGender"><option value="F">Sister</option><option value="M">Brother</option></select></div>
+      <div class="field"><label>Birthdate</label><input id="fBirth" type="date"></div>
+      <div class="field"><label>Phone</label><input id="fPhone" type="tel"></div>
+      <div class="field full"><label>Email</label><input id="fEmail" type="email"></div>
+      <div class="field"><label>Membership</label>
+        <select id="fStatus">
+          <option value="member">Member</option>
+          <option value="convert">Recent convert (&lt; 1 yr)</option>
+          <option value="friend">Friend of the ward (not a member)</option>
+        </select></div>
+      <div class="field"><label>Boundaries</label>
+        <select id="fBounds"><option value="in">In ward boundaries</option><option value="out">Outside boundaries</option></select></div>
+      <div class="field"><label>Records</label>
+        <select id="fRecords">
+          <option value="ward">In this ward</option>
+          <option value="ysa">In a YSA ward</option>
+          <option value="pending">Transfer pending</option>
+          <option value="moved">Moved out</option>
+        </select></div>
+      <div class="field"><label>Attends</label>
+        <select id="fAttends">
+          <option value="this">This ward</option>
+          <option value="ysa">YSA ward</option>
+          <option value="other">Another unit</option>
+          <option value="none">Not attending</option>
+          <option value="unknown">Unknown</option>
+        </select></div>
+      <div class="field"><label>Activity</label>
+        <select id="fActivity">
+          <option value="active">Active</option>
+          <option value="semi">Semi-active</option>
+          <option value="less">Less active</option>
+          <option value="unknown">Unknown</option>
+          <option value="dnc">Do not contact</option>
+        </select></div>
+      <div class="field"><label>Priesthood (brothers)</label>
+        <select id="fPriesthood">
+          <option value="na">—</option>
+          <option value="none">None</option>
+          <option value="deacon">Deacon</option>
+          <option value="teacher">Teacher</option>
+          <option value="priest">Priest</option>
+          <option value="elder">Elder</option>
+        </select></div>
+      <div class="field"><label>Mission</label>
+        <select id="fMission">
+          <option value="none">—</option>
+          <option value="preparing">Preparing</option>
+          <option value="papers">Papers in</option>
+          <option value="called">Call received</option>
+          <option value="serving">Serving now</option>
+          <option value="returned">Returned missionary</option>
+          <option value="notplanning">Not planning to serve</option>
+        </select></div>
+      <div class="field"><label>Temple recommend</label>
+        <select id="fRecommend">
+          <option value="none">None</option>
+          <option value="limited">Limited-use (active)</option>
+          <option value="full">Full (endowed, active)</option>
+          <option value="expired">Expired</option>
+        </select></div>
+      <div class="field"><label>Recommend renewal</label><input id="fRenewal" type="date"></div>
+      <div class="field"><label>Next ordinance</label>
+        <select id="fNextOrd">
+          <option value="none">—</option>
+          <option value="baptism">Baptism</option>
+          <option value="aaronic">Aaronic Priesthood</option>
+          <option value="melchizedek">Melchizedek Priesthood</option>
+          <option value="endowment">Endowment</option>
+          <option value="sealing">Sealing</option>
+        </select></div>
+      <div class="field"><label>Temple prep class</label>
+        <select id="fTemplePrep"><option value="no">Not enrolled</option><option value="yes">Enrolled</option><option value="needs">Needs outreach</option></select></div>
+      <div class="field"><label>Institute</label>
+        <select id="fInstitute"><option value="no">Not enrolled</option><option value="enrolled">Enrolled</option><option value="completed">Completed</option></select></div>
+      <div class="field"><label>Calling</label><input id="fCalling" placeholder="e.g., Sunday School teacher"></div>
+      <div class="field"><label>Ministering assigned</label>
+        <select id="fMinistering"><option value="no">No</option><option value="yes">Yes</option></select></div>
+      <div class="field"><label>School / Work</label><input id="fSchool" placeholder="e.g., SLCC — nursing"></div>
+      <div class="field"><label>Focus list</label>
+        <select id="fFocus"><option value="no">No</option><option value="yes">Yes — Focus 5</option></select></div>
+      <div class="field"><label>Follow-up flag</label>
+        <select id="fFlag"><option value="no">No</option><option value="yes">Yes — needs follow-up</option></select></div>
+      <div class="field full"><label>Notes</label><textarea id="fNotes" placeholder="Context, family, best way to reach, who has the relationship…"></textarea></div>
+    </div>
+    <div class="m-actions">
+      <button class="btn btn-danger" id="btnDelete" style="margin-right:auto">Delete</button>
+      <button class="btn btn-ghost" id="btnCancel">Cancel</button>
+      <button class="btn btn-gold" id="btnSave" style="width:auto">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+/* =====================================================================
+   CONFIG — paste your Firebase web config here (Project settings → Your
+   apps → SDK setup). Create a new project (e.g. "ysa-r24-record") or
+   reuse an existing one; this app uses collections `ysaMembers` and
+   `ysaHistory`, so it will not collide with the EQ record's data.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDVY8rVYWDqbdg_MWKXfbls3VEzQxDAj2I",
+  authDomain: "ysa-r24.firebaseapp.com",
+  projectId: "ysa-r24",
+  storageBucket: "ysa-r24.firebasestorage.app",
+  messagingSenderId: "360237127144",
+  appId: "1:360237127144:web:9f9b41576b5fdb1650c05d"
+};
+const COL_MEMBERS = "ysaMembers";
+const COL_HISTORY = "ysaHistory";
+const IDLE_MINUTES = 30;
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ---------------- state ---------------- */
+let members = [];      // {id, ...fields}
+let history = [];      // {id, name, type, date, note}
+let activeFilter = "all";
+let searchTerm = "";
+let editingId = null;
+let reviewMode = "full";
+let unsubMembers = null, unsubHistory = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------------- helpers ---------------- */
+function ageOf(m){
+  if(!m.birthdate) return null;
+  const b = new Date(m.birthdate + "T00:00:00");
+  if(isNaN(b)) return null;
+  const now = new Date();
+  let a = now.getFullYear() - b.getFullYear();
+  const mm = now.getMonth() - b.getMonth();
+  if(mm < 0 || (mm === 0 && now.getDate() < b.getDate())) a--;
+  return a;
+}
+function agingOutSoon(m){ // turns 31 within 12 months
+  const a = ageOf(m);
+  return a !== null && a >= 30;
+}
+function agedOut(m){ const a = ageOf(m); return a !== null && a >= 31; }
+function displayTitle(m){ return m.gender === "M" ? "Bro." : "Sis."; }
+
+const LABELS = {
+  activity:{active:"Active",semi:"Semi-active",less:"Less active",unknown:"Unknown",dnc:"Do not contact"},
+  attends:{this:"This ward",ysa:"YSA ward",other:"Other unit",none:"Not attending",unknown:"Unknown"},
+  records:{ward:"This ward",ysa:"YSA ward",pending:"Transfer pending",moved:"Moved out"},
+  mission:{none:"—",preparing:"Preparing",papers:"Papers in",called:"Call received",serving:"Serving",returned:"RM",notplanning:"Not planning"},
+  priesthood:{na:"—",none:"None",deacon:"Deacon",teacher:"Teacher",priest:"Priest",elder:"Elder"},
+  recommend:{none:"None",limited:"Limited-use",full:"Full (active)",expired:"Expired"},
+  nextOrd:{none:"—",baptism:"Baptism",aaronic:"Aaronic PH",melchizedek:"Melchizedek PH",endowment:"Endowment",sealing:"Sealing"},
+  institute:{no:"Not enrolled",enrolled:"Enrolled",completed:"Completed"},
+  templePrep:{no:"Not enrolled",yes:"Enrolled",needs:"Needs outreach"},
+  histType:{baptism:"Baptism & confirmation",aaronic:"Aaronic Priesthood",melchizedek:"Melchizedek Priesthood",endowment:"Endowment",sealing:"Sealing",mission_call:"Mission call",mission_depart:"Entered mission field",mission_return:"Returned with honor",recommend:"Recommend issued/renewed",institute:"Institute",calling:"Calling extended",reactivation:"Returned to activity",other:"Other"}
+};
+
+/* ---------------- filters ---------------- */
+const FILTERS = [
+  ["all","All YSA", m=>true],
+  ["flag","Has follow-up flag", m=>m.flag==="yes"],
+  ["focus","On the Focus 5 list", m=>m.focus==="yes"],
+  ["less","Less active / unknown", m=>["less","unknown"].includes(m.activity)],
+  ["attendysa","Attending a YSA ward", m=>m.attends==="ysa"],
+  ["notattending","Not attending anywhere", m=>m.attends==="none"],
+  ["prep","Preparing for a mission", m=>["preparing","papers","called"].includes(m.mission)],
+  ["serving","Serving full-time mission", m=>m.mission==="serving"],
+  ["rm","Returned missionaries", m=>m.mission==="returned"],
+  ["needsmelch","Need Melchizedek Priesthood", m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)],
+  ["nextend","Next ordinance: Endowment", m=>m.nextOrd==="endowment"],
+  ["nextseal","Next ordinance: Sealing", m=>m.nextOrd==="sealing"],
+  ["expired","Recommend expired", m=>m.recommend==="expired"],
+  ["templeprep","In temple prep class", m=>m.templePrep==="yes"],
+  ["templeout","Temple class — needs outreach", m=>m.templePrep==="needs"],
+  ["institute","Institute enrolled", m=>m.institute==="enrolled"],
+  ["noinst","Not in institute", m=>m.institute==="no"],
+  ["nocall","No calling", m=>!String(m.calling||"").trim()],
+  ["friends","Friends of the ward", m=>m.status==="friend"],
+  ["converts","Recent converts", m=>m.status==="convert"],
+  ["aging","Aging out (30+)", m=>agingOutSoon(m)],
+  ["moved","Records moved out", m=>m.records==="moved"],
+  ["pending","Records transfer pending", m=>m.records==="pending"]
+];
+
+/* ---------------- auth ---------------- */
+$("btnSignIn").onclick = async () => {
+  $("authErr").textContent = "";
+  try{ await auth.signInWithEmailAndPassword($("authEmail").value.trim(), $("authPass").value); }
+  catch(e){ $("authErr").textContent = friendlyAuthError(e); }
+};
+$("authPass").addEventListener("keydown", e => { if(e.key==="Enter") $("btnSignIn").click(); });
+$("btnForgot").onclick = async () => {
+  const em = $("authEmail").value.trim();
+  if(!em){ $("authErr").textContent = "Enter your email first, then tap Forgot password."; return; }
+  try{ await auth.sendPasswordResetEmail(em); toast("Password reset email sent."); }
+  catch(e){ $("authErr").textContent = friendlyAuthError(e); }
+};
+$("btnSignOut").onclick = () => auth.signOut();
+$("btnPwReset").onclick = async () => {
+  if(auth.currentUser){ await auth.sendPasswordResetEmail(auth.currentUser.email); toast("Password reset email sent."); }
+};
+function friendlyAuthError(e){
+  const c = e && e.code || "";
+  if(c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")) return "Email or password doesn't match an authorized account.";
+  if(c.includes("too-many-requests")) return "Too many attempts. Wait a moment and try again.";
+  if(c.includes("network")) return "Network issue. Check your connection and try again.";
+  return "Sign-in failed. " + (e && e.message || "");
+}
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    $("authView").style.display = "none";
+    $("appView").style.display = "block";
+    $("whoAmI").textContent = user.email;
+    $("setAccount").textContent = user.email;
+    attachData();
+    armIdleTimer();
+  }else{
+    $("appView").style.display = "none";
+    $("authView").style.display = "block";
+    if(unsubMembers) unsubMembers();
+    if(unsubHistory) unsubHistory();
+    members = []; history = [];
+  }
+});
+
+/* ---------------- idle sign-out ---------------- */
+let idleTimer = null;
+function armIdleTimer(){
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => { if(auth.currentUser){ auth.signOut(); toast("Signed out after inactivity."); } }, IDLE_MINUTES*60*1000);
+}
+["click","keydown","touchstart","scroll"].forEach(ev => document.addEventListener(ev, () => { if(auth.currentUser) armIdleTimer(); }, {passive:true}));
+
+/* ---------------- live data ---------------- */
+function attachData(){
+  unsubMembers = db.collection(COL_MEMBERS).onSnapshot(snap => {
+    members = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    members.sort((a,b) => String(a.name||"").localeCompare(String(b.name||"")));
+    renderAll();
+  }, err => toast("Data error: " + err.message));
+  unsubHistory = db.collection(COL_HISTORY).onSnapshot(snap => {
+    history = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    history.sort((a,b) => String(b.date||"").localeCompare(String(a.date||"")));
+    renderHistory();
+  }, err => toast("History error: " + err.message));
+}
+
+/* ---------------- tabs ---------------- */
+$("tabsNav").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("nav.tabs button").forEach(x => x.classList.toggle("active", x===b));
+  document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("active", s.id === "tab-"+b.dataset.tab));
+  window.scrollTo({top:0});
+});
+function goToMembers(filterKey){
+  activeFilter = filterKey || "all";
+  document.querySelectorAll("nav.tabs button").forEach(x => x.classList.toggle("active", x.dataset.tab==="members"));
+  document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("active", s.id==="tab-members"));
+  renderChips(); renderTable(); window.scrollTo({top:0});
+}
+
+/* ---------------- dashboard ---------------- */
+function count(fn){ return members.filter(fn).length; }
+function renderDash(){
+  const cards = [
+    {title:"Roster & Records", rows:[
+      ["Total on the record", count(m=>true), "", "all"],
+      ["In ward boundaries", count(m=>m.boundaries==="in"), "", "all"],
+      ["Records in a YSA ward", count(m=>m.records==="ysa"), "teal", "attendysa"],
+      ["Transfer pending", count(m=>m.records==="pending"), "warn", "pending"],
+      ["Moved out", count(m=>m.records==="moved"), "", "moved"]
+    ]},
+    {title:"Activity & Outreach", rows:[
+      ["Active", count(m=>m.activity==="active"), "good", "all"],
+      ["Less active / unknown", count(m=>["less","unknown"].includes(m.activity)), "warn", "less"],
+      ["Attending a YSA ward", count(m=>m.attends==="ysa"), "teal", "attendysa"],
+      ["Not attending anywhere", count(m=>m.attends==="none"), "warn", "notattending"]
+    ]},
+    {title:"Missionary Work", rows:[
+      ["Preparing / papers / called", count(m=>["preparing","papers","called"].includes(m.mission)), "teal", "prep"],
+      ["Serving now", count(m=>m.mission==="serving"), "good", "serving"],
+      ["Returned missionaries", count(m=>m.mission==="returned"), "", "rm"],
+      ["Friends of the ward", count(m=>m.status==="friend"), "teal", "friends"]
+    ]},
+    {title:"Temple & Ordinances", rows:[
+      ["Endowed, recommend active", count(m=>m.recommend==="full"), "good", "all"],
+      ["Next: Endowment", count(m=>m.nextOrd==="endowment"), "teal", "nextend"],
+      ["Need Melchizedek PH", count(m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)), "warn", "needsmelch"],
+      ["Recommends expired", count(m=>m.recommend==="expired"), "warn", "expired"],
+      ["Temple prep — needs outreach", count(m=>m.templePrep==="needs"), "warn", "templeout"]
+    ]},
+    {title:"Institute & Callings", rows:[
+      ["Institute enrolled", count(m=>m.institute==="enrolled"), "good", "institute"],
+      ["Not in institute", count(m=>m.institute==="no"), "", "noinst"],
+      ["No calling", count(m=>!String(m.calling||"").trim()), "warn", "nocall"],
+      ["No ministering assignment", count(m=>m.ministering!=="yes"), "", "all"]
+    ]},
+    {title:"Flags & Follow-Up", rows:[
+      ["Follow-up flags", count(m=>m.flag==="yes"), "warn", "flag"],
+      ["On the Focus 5 list", count(m=>m.focus==="yes"), "gold", "focus"],
+      ["Recent converts", count(m=>m.status==="convert"), "teal", "converts"],
+      ["Aging out (30+)", count(m=>agingOutSoon(m)), "warn", "aging"]
+    ]}
+  ];
+  $("dashCards").innerHTML = cards.map(c => `
+    <div class="card" onclick="goToMembers('${c.rows[0][3]}')">
+      <h3>${c.title}</h3>
+      ${c.rows.map(r => `<div class="stat-row" onclick="event.stopPropagation();goToMembers('${r[3]}')">
+        <span class="lbl">${r[0]}</span><span class="val ${r[2]==="gold"?"":r[2]}" ${r[2]==="gold"?'style="color:var(--gold)"':""}>${r[1]}</span>
+      </div>`).join("")}
+    </div>`).join("");
+}
+
+/* ---------------- members table ---------------- */
+function renderChips(){
+  $("filterChips").innerHTML = FILTERS.map(([k,l]) =>
+    `<button class="chip ${activeFilter===k?"active":""}" data-f="${k}">${l}</button>`).join("");
+}
+$("filterChips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if(!c) return;
+  activeFilter = c.dataset.f; renderChips(); renderTable();
+});
+$("search").addEventListener("input", e => { searchTerm = e.target.value.toLowerCase(); renderTable(); });
+
+function visibleMembers(){
+  const f = FILTERS.find(x => x[0]===activeFilter) || FILTERS[0];
+  return members.filter(f[2]).filter(m => {
+    if(!searchTerm) return true;
+    return [m.name,m.school,m.calling,m.notes,m.email,m.phone].join(" ").toLowerCase().includes(searchTerm);
+  });
+}
+function pill(text, cls){ return `<span class="pill ${cls}">${esc(text)}</span>`; }
+function renderTable(){
+  const list = visibleMembers();
+  $("tblEmpty").style.display = list.length ? "none" : "block";
+  $("tblBody").innerHTML = list.map(m => {
+    const a = ageOf(m);
+    const flags = [
+      m.flag==="yes" ? pill("Follow-up","p-warn") : "",
+      m.focus==="yes" ? pill("Focus 5","p-gold") : "",
+      agingOutSoon(m) ? pill(agedOut(m)?"Aged out":"Aging out","p-warn") : "",
+      m.status==="convert" ? pill("New convert","p-teal") : "",
+      m.status==="friend" ? pill("Friend","p-teal") : ""
+    ].filter(Boolean).join(" ");
+    const act = m.activity==="active" ? pill("Active","p-ok")
+      : m.activity==="semi" ? pill("Semi","p-gold")
+      : m.activity==="dnc" ? pill("DNC","p-dim")
+      : pill(LABELS.activity[m.activity]||"—","p-warn");
+    const rec = m.recommend==="full" ? pill("Full","p-ok")
+      : m.recommend==="limited" ? pill("Limited","p-teal")
+      : m.recommend==="expired" ? pill("Expired","p-warn") : pill("None","p-dim");
+    return `<tr onclick="openEdit('${m.id}')">
+      <td><span class="nm">${esc(m.name)}</span><br><span class="mut">${displayTitle(m)} · ${esc(m.school||"")}</span></td>
+      <td>${a ?? "—"}</td>
+      <td>${esc(LABELS.attends[m.attends]||"—")}</td>
+      <td>${act}</td>
+      <td>${esc(LABELS.mission[m.mission]||"—")}</td>
+      <td>${m.gender==="M" ? esc(LABELS.priesthood[m.priesthood]||"—") : "—"}</td>
+      <td>${rec}</td>
+      <td>${esc(LABELS.nextOrd[m.nextOrd]||"—")}</td>
+      <td>${esc(LABELS.institute[m.institute]||"—")}</td>
+      <td>${esc(m.calling||"—")}</td>
+      <td>${flags||"—"}</td>
+    </tr>`;
+  }).join("");
+}
+
+/* ---------------- add / edit modal ---------------- */
+const FIELD_MAP = {
+  name:"fName", gender:"fGender", birthdate:"fBirth", phone:"fPhone", email:"fEmail",
+  status:"fStatus", boundaries:"fBounds", records:"fRecords", attends:"fAttends",
+  activity:"fActivity", priesthood:"fPriesthood", mission:"fMission",
+  recommend:"fRecommend", renewal:"fRenewal", nextOrd:"fNextOrd", templePrep:"fTemplePrep",
+  institute:"fInstitute", calling:"fCalling", ministering:"fMinistering",
+  school:"fSchool", focus:"fFocus", flag:"fFlag", notes:"fNotes"
+};
+const DEFAULTS = {
+  name:"", gender:"F", birthdate:"", phone:"", email:"", status:"member",
+  boundaries:"in", records:"ward", attends:"this", activity:"active",
+  priesthood:"na", mission:"none", recommend:"none", renewal:"",
+  nextOrd:"none", templePrep:"no", institute:"no", calling:"",
+  ministering:"no", school:"", focus:"no", flag:"no", notes:""
+};
+function openModal(){ $("modalBg").classList.add("open"); }
+function closeModal(){ $("modalBg").classList.remove("open"); editingId = null; }
+$("btnModalX").onclick = closeModal;
+$("btnCancel").onclick = closeModal;
+$("modalBg").addEventListener("click", e => { if(e.target === $("modalBg")) closeModal(); });
+
+$("btnAdd").onclick = () => {
+  editingId = null;
+  $("modalTitle").textContent = "Add YSA";
+  Object.entries(FIELD_MAP).forEach(([k,id]) => $(id).value = DEFAULTS[k]);
+  $("btnDelete").style.display = "none";
+  openModal();
+};
+window.openEdit = id => {
+  const m = members.find(x => x.id === id); if(!m) return;
+  editingId = id;
+  $("modalTitle").textContent = "Edit — " + (m.name || "");
+  Object.entries(FIELD_MAP).forEach(([k,fid]) => $(fid).value = m[k] ?? DEFAULTS[k]);
+  $("btnDelete").style.display = "inline-flex";
+  openModal();
+};
+$("btnSave").onclick = async () => {
+  const data = {};
+  Object.entries(FIELD_MAP).forEach(([k,id]) => data[k] = $(id).value.trim ? $(id).value.trim() : $(id).value);
+  if(!data.name){ toast("Name is required."); return; }
+  data.updatedAt = new Date().toISOString();
+  try{
+    if(editingId) await db.collection(COL_MEMBERS).doc(editingId).set(data, {merge:true});
+    else await db.collection(COL_MEMBERS).add(data);
+    toast("Saved: " + data.name);
+    closeModal();
+  }catch(e){ toast("Save failed: " + e.message); }
+};
+$("btnDelete").onclick = async () => {
+  if(!editingId) return;
+  const m = members.find(x => x.id === editingId);
+  if(!confirm(`Delete ${m && m.name || "this record"}? This can't be undone.`)) return;
+  try{ await db.collection(COL_MEMBERS).doc(editingId).delete(); toast("Deleted."); closeModal(); }
+  catch(e){ toast("Delete failed: " + e.message); }
+};
+
+/* ---------------- meeting review ---------------- */
+$("reviewSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  reviewMode = b.dataset.mode;
+  document.querySelectorAll("#reviewSeg button").forEach(x => x.classList.toggle("active", x===b));
+  renderReview();
+});
+function personLine(m, why){
+  const a = ageOf(m);
+  return `<li onclick="openEdit('${m.id}')">
+    <span><strong>${esc(m.name)}</strong> <span class="mut">(${a ?? "—"}${m.gender==="M"?", Bro.":", Sis."})</span></span>
+    <span class="why">${esc(why||"")}</span></li>`;
+}
+function renderReview(){
+  const stats = [
+    ["Total YSA", members.length],
+    ["Active", count(m=>m.activity==="active")],
+    ["Less active", count(m=>["less","unknown"].includes(m.activity))],
+    ["Preparing missionaries", count(m=>["preparing","papers","called"].includes(m.mission))],
+    ["Serving", count(m=>m.mission==="serving")],
+    ["Institute", count(m=>m.institute==="enrolled")],
+    ["Follow-up flags", count(m=>m.flag==="yes")],
+    ["Aging out", count(m=>agingOutSoon(m))]
+  ];
+  const prioritySections = buildPlanSections();
+  let html = `<div class="rep-stats">${stats.map(s =>
+    `<div class="rep-stat"><div class="n">${s[1]}</div><div class="l">${s[0]}</div></div>`).join("")}</div>`;
+  html += prioritySections.filter(s => s.items.length).map(s => `
+    <div class="report"><h3>${s.title}</h3><ul>${s.items.map(x => personLine(x.m, x.why)).join("")}</ul></div>`).join("");
+  if(reviewMode === "full"){
+    html += `<div class="report"><h3>Everyone on the record</h3><ul>${
+      members.map(m => personLine(m,
+        [LABELS.activity[m.activity], LABELS.attends[m.attends] ? "attends: "+LABELS.attends[m.attends] : "",
+         m.calling ? "calling: "+m.calling : "no calling"].filter(Boolean).join(" · ")
+      )).join("")}</ul></div>`;
+  }
+  $("reviewBody").innerHTML = html || `<div class="empty">Add YSA records to build this report.</div>`;
+}
+
+/* ---------------- plan of action ---------------- */
+function buildPlanSections(){
+  return [
+    {title:"Follow-up flags — act this week", items: members.filter(m=>m.flag==="yes").map(m=>({m, why: m.notes ? m.notes.slice(0,80) : "Flagged for follow-up"}))},
+    {title:"Focus 5", items: members.filter(m=>m.focus==="yes").map(m=>({m, why:"On the Focus 5 list"}))},
+    {title:"Mission prep pipeline", items: members.filter(m=>["preparing","papers","called"].includes(m.mission)).map(m=>({m, why: LABELS.mission[m.mission]}))},
+    {title:"Next ordinance ready", items: members.filter(m=>m.nextOrd && m.nextOrd!=="none").map(m=>({m, why:"Next: "+LABELS.nextOrd[m.nextOrd]+(m.templePrep==="yes"?" · in temple prep":m.templePrep==="needs"?" · invite to temple prep":"")}))},
+    {title:"Brothers needing Melchizedek Priesthood", items: members.filter(m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)).map(m=>({m, why:"Currently: "+(LABELS.priesthood[m.priesthood]||"—")}))},
+    {title:"Recommends expired", items: members.filter(m=>m.recommend==="expired").map(m=>({m, why: m.renewal ? "Expired — renewal noted "+m.renewal : "Expired"}))},
+    {title:"Reactivation outreach", items: members.filter(m=>["less","unknown"].includes(m.activity) && m.records!=="moved" && m.activity!=="dnc").map(m=>({m, why: LABELS.activity[m.activity]+" · "+(LABELS.attends[m.attends]||"")}))},
+    {title:"Not attending anywhere", items: members.filter(m=>m.attends==="none" && m.activity!=="dnc").map(m=>({m, why:"Invite back — "+(m.school||"see notes")}))},
+    {title:"Institute invitations", items: members.filter(m=>m.institute==="no" && m.activity==="active").map(m=>({m, why:"Active but not enrolled in institute"}))},
+    {title:"Needs a calling", items: members.filter(m=>!String(m.calling||"").trim() && m.activity!=="dnc" && m.records!=="moved").map(m=>({m, why:"No current calling"}))},
+    {title:"Aging out — transition plan (30+)", items: members.filter(m=>agingOutSoon(m)).map(m=>({m, why:(agedOut(m)?"Already 31+ — ":"Turns 31 within the year — ")+"plan the hand-off"}))},
+    {title:"Recent converts — first-year milestones", items: members.filter(m=>m.status==="convert").map(m=>({m, why:"Next: "+(LABELS.nextOrd[m.nextOrd]||"—")}))},
+    {title:"Records to resolve", items: members.filter(m=>["pending","moved"].includes(m.records)).map(m=>({m, why: LABELS.records[m.records]}))}
+  ];
+}
+function renderPlan(){
+  const secs = buildPlanSections().filter(s => s.items.length);
+  $("planBody").innerHTML = secs.length ? secs.map(s => `
+    <div class="report"><h3>${s.title} <span class="mut" style="font-family:var(--font-body);font-size:12px">(${s.items.length})</span></h3>
+    <ul>${s.items.map(x => personLine(x.m, x.why)).join("")}</ul></div>`).join("")
+    : `<div class="empty">Nothing needs action right now — or add records to build the plan.</div>`;
+}
+
+/* ---------------- history ---------------- */
+$("btnHistAdd").onclick = async () => {
+  const name = $("histName").value.trim();
+  const date = $("histDate").value || new Date().toISOString().slice(0,10);
+  if(!name){ toast("Add a name for the milestone."); return; }
+  try{
+    await db.collection(COL_HISTORY).add({
+      name, type: $("histType").value, date, note: $("histNote").value.trim(),
+      loggedBy: auth.currentUser ? auth.currentUser.email : "", loggedAt: new Date().toISOString()
+    });
+    $("histName").value = ""; $("histNote").value = "";
+    toast("Milestone logged.");
+  }catch(e){ toast("Log failed: " + e.message); }
+};
+function quarterKey(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  if(isNaN(d)) return null;
+  return d.getFullYear() + " Q" + (Math.floor(d.getMonth()/3)+1);
+}
+function renderHistory(){
+  $("histNames").innerHTML = members.map(m => `<option value="${esc(m.name)}">`).join("");
+  // last 6 quarters
+  const counts = {};
+  history.forEach(h => { const q = quarterKey(h.date); if(q) counts[q] = (counts[q]||0)+1; });
+  const qs = [];
+  const now = new Date();
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i*3, 1);
+    qs.push(d.getFullYear() + " Q" + (Math.floor(d.getMonth()/3)+1));
+  }
+  const uq = [...new Set(qs)];
+  const max = Math.max(1, ...uq.map(q => counts[q]||0));
+  $("histBars").innerHTML = uq.map(q => `
+    <div class="bar-col">
+      <div class="bar-n">${counts[q]||0}</div>
+      <div class="bar" style="height:${Math.round((counts[q]||0)/max*95)}%"></div>
+      <div class="bar-lbl">${q}</div>
+    </div>`).join("");
+  $("histList").innerHTML = history.length ? history.map(h => `
+    <li><span><strong>${esc(h.name)}</strong> — ${esc(LABELS.histType[h.type]||h.type)}${h.note?` <span class="mut">· ${esc(h.note)}</span>`:""}</span>
+    <span class="mut">${esc(h.date||"")}</span></li>`).join("")
+    : `<li><span class="mut">No milestones logged yet. Every ordinance, mission call, and return belongs here.</span></li>`;
+}
+
+/* ---------------- CSV export ---------------- */
+$("btnCsv").onclick = () => {
+  const cols = ["name","gender","birthdate","age","phone","email","status","boundaries","records","attends","activity","priesthood","mission","recommend","renewal","nextOrd","templePrep","institute","calling","ministering","school","focus","flag","notes"];
+  const head = cols.join(",");
+  const rows = visibleMembers().map(m => cols.map(c => {
+    let v = c==="age" ? (ageOf(m) ?? "") : (m[c] ?? "");
+    v = String(v).replace(/"/g,'""');
+    return /[",\n]/.test(v) ? `"${v}"` : v;
+  }).join(","));
+  downloadFile("ysa-record-" + new Date().toISOString().slice(0,10) + ".csv",
+    "\uFEFF" + [head, ...rows].join("\n"), "text/csv");
+  toast("CSV exported (current filter view).");
+};
+
+/* ---------------- backup / import ---------------- */
+$("btnBackup").onclick = () => {
+  const payload = {exported: new Date().toISOString(), app:"YSA Ward Record — Riverton 24th", members, history};
+  downloadFile("ysa-record-backup-" + new Date().toISOString().slice(0,10) + ".json",
+    JSON.stringify(payload, null, 2), "application/json");
+  toast("Backup exported.");
+};
+$("btnImport").onclick = () => $("importFile").click();
+$("importFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    const list = Array.isArray(data) ? data : (data.members || []);
+    if(!list.length){ toast("No member records found in that file."); return; }
+    if(!confirm(`Import ${list.length} records into the cloud? Existing records are kept; imported ones are added.`)) return;
+    const batchSize = 400;
+    for(let i=0;i<list.length;i+=batchSize){
+      const batch = db.batch();
+      list.slice(i,i+batchSize).forEach(m => {
+        const {id, ...rest} = m;
+        batch.set(db.collection(COL_MEMBERS).doc(), {...DEFAULTS, ...rest, importedAt:new Date().toISOString()});
+      });
+      await batch.commit();
+    }
+    if(Array.isArray(data.history) && data.history.length && confirm(`Also import ${data.history.length} history entries?`)){
+      for(let i=0;i<data.history.length;i+=400){
+        const batch = db.batch();
+        data.history.slice(i,i+400).forEach(h => { const {id, ...rest} = h; batch.set(db.collection(COL_HISTORY).doc(), rest); });
+        await batch.commit();
+      }
+    }
+    toast("Import complete.");
+  }catch(err){ toast("Import failed: " + err.message); }
+  e.target.value = "";
+});
+function downloadFile(name, content, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ---------------- toast + render root ---------------- */
+let toastTimer = null;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.style.display = "block";
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = "none", 3200);
+}
+function renderAll(){ renderDash(); renderChips(); renderTable(); renderReview(); renderPlan(); renderHistory(); }
+renderChips();
+</script>
+</body>
+</html>
