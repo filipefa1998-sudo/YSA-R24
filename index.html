@@ -268,17 +268,16 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
   <div class="cards" id="dashCards"></div>
   <div class="dash-foot no-print">
     <a href="https://filipefa1998-sudo.github.io/focus5-tracker/" target="_blank" rel="noopener">Open the Focus 5 Tracker ↗</a>
-    &nbsp;·&nbsp;
-    <a href="https://filipefa1998-sudo.github.io/EQ-R24-Quorum-Record/" target="_blank" rel="noopener">Elders Quorum Record ↗</a>
   </div>
 </section>
 
 <!-- ===== Members ===== -->
 <section class="tab" id="tab-members">
   <h2 class="sec">Members</h2>
-  <p class="sec-sub">Every YSA (18–30) on ward records or living in boundaries — plus friends of the ward.</p>
+  <p class="sec-sub">Every YSA (18–35, unmarried) on ward records or living in boundaries — plus friends of the ward.</p>
   <div class="toolbar no-print">
     <button class="btn btn-teal" id="btnAdd">+ Add YSA</button>
+    <button class="btn btn-gold" id="btnBulk" style="width:auto">Bulk Import</button>
     <button class="btn btn-ghost" id="btnCsv">Export CSV (Excel)</button>
     <button class="btn btn-ghost" onclick="window.print()">Print / Save as PDF</button>
   </div>
@@ -484,6 +483,33 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
   </div>
 </div>
 
+<!-- ================= BULK IMPORT MODAL ================= -->
+<div class="modal-bg" id="bulkBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+    <button class="close-x" id="btnBulkX" aria-label="Close">&#10005;</button>
+    <h3 id="bulkTitle">Bulk Import YSA</h3>
+    <p style="font-size:13px;color:var(--cream-dim);margin-bottom:10px">
+      Paste straight from Excel / Google Sheets (with a header row), upload a CSV, or just paste <strong>one name per line</strong>.
+      Recognized headers: <code style="color:var(--horizon)">name, gender, birthdate, phone, email, school, activity, mission, calling, notes</code>.
+      No header? Columns are read as Name, Birthdate, Phone, Email. Everything else starts with sensible defaults you can edit later.
+    </p>
+    <div class="field">
+      <label>Paste your list</label>
+      <textarea id="bulkText" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="Sione Taufa&#10;Mele Fifita&#10;Losaline Tupou&#10;&#10;— or paste a spreadsheet —&#10;Name&#9;Gender&#9;Birthdate&#9;Phone&#10;Sione Taufa&#9;M&#9;03/14/2002&#9;801-555-0114"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+      <button class="btn btn-ghost" id="btnBulkFile">Load a CSV file…</button>
+      <input type="file" id="bulkFile" accept=".csv,.tsv,.txt" style="display:none">
+      <button class="btn btn-teal" id="btnBulkPreview">Preview</button>
+    </div>
+    <div id="bulkPreview" style="font-size:13px;color:var(--cream-dim);min-height:20px;margin-bottom:8px"></div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" id="btnBulkCancel">Cancel</button>
+      <button class="btn btn-gold" id="btnBulkGo" style="width:auto" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -535,11 +561,11 @@ function ageOf(m){
   if(mm < 0 || (mm === 0 && now.getDate() < b.getDate())) a--;
   return a;
 }
-function agingOutSoon(m){ // turns 31 within 12 months
+function agingOutSoon(m){ // turns 36 within 12 months
   const a = ageOf(m);
-  return a !== null && a >= 30;
+  return a !== null && a >= 35;
 }
-function agedOut(m){ const a = ageOf(m); return a !== null && a >= 31; }
+function agedOut(m){ const a = ageOf(m); return a !== null && a >= 36; }
 function displayTitle(m){ return m.gender === "M" ? "Bro." : "Sis."; }
 
 const LABELS = {
@@ -577,7 +603,7 @@ const FILTERS = [
   ["nocall","No calling", m=>!String(m.calling||"").trim()],
   ["friends","Friends of the ward", m=>m.status==="friend"],
   ["converts","Recent converts", m=>m.status==="convert"],
-  ["aging","Aging out (30+)", m=>agingOutSoon(m)],
+  ["aging","Aging out (35+)", m=>agingOutSoon(m)],
   ["moved","Records moved out", m=>m.records==="moved"],
   ["pending","Records transfer pending", m=>m.records==="pending"]
 ];
@@ -700,7 +726,7 @@ function renderDash(){
       ["Follow-up flags", count(m=>m.flag==="yes"), "warn", "flag"],
       ["On the Focus 5 list", count(m=>m.focus==="yes"), "gold", "focus"],
       ["Recent converts", count(m=>m.status==="convert"), "teal", "converts"],
-      ["Aging out (30+)", count(m=>agingOutSoon(m)), "warn", "aging"]
+      ["Aging out (35+)", count(m=>agingOutSoon(m)), "warn", "aging"]
     ]}
   ];
   $("dashCards").innerHTML = cards.map(c => `
@@ -875,7 +901,7 @@ function buildPlanSections(){
     {title:"Not attending anywhere", items: members.filter(m=>m.attends==="none" && m.activity!=="dnc").map(m=>({m, why:"Invite back — "+(m.school||"see notes")}))},
     {title:"Institute invitations", items: members.filter(m=>m.institute==="no" && m.activity==="active").map(m=>({m, why:"Active but not enrolled in institute"}))},
     {title:"Needs a calling", items: members.filter(m=>!String(m.calling||"").trim() && m.activity!=="dnc" && m.records!=="moved").map(m=>({m, why:"No current calling"}))},
-    {title:"Aging out — transition plan (30+)", items: members.filter(m=>agingOutSoon(m)).map(m=>({m, why:(agedOut(m)?"Already 31+ — ":"Turns 31 within the year — ")+"plan the hand-off"}))},
+    {title:"Aging out — transition plan (35+)", items: members.filter(m=>agingOutSoon(m)).map(m=>({m, why:(agedOut(m)?"Already 36+ — ":"Turns 36 within the year — ")+"plan the hand-off"}))},
     {title:"Recent converts — first-year milestones", items: members.filter(m=>m.status==="convert").map(m=>({m, why:"Next: "+(LABELS.nextOrd[m.nextOrd]||"—")}))},
     {title:"Records to resolve", items: members.filter(m=>["pending","moved"].includes(m.records)).map(m=>({m, why: LABELS.records[m.records]}))}
   ];
@@ -988,6 +1014,145 @@ function downloadFile(name, content, type){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+
+
+/* ---------------- bulk import ---------------- */
+let bulkParsed = [];
+$("btnBulk").onclick = () => { bulkParsed = []; $("bulkText").value = ""; $("bulkPreview").textContent = ""; $("btnBulkGo").disabled = true; $("bulkBg").classList.add("open"); };
+function closeBulk(){ $("bulkBg").classList.remove("open"); }
+$("btnBulkX").onclick = closeBulk;
+$("btnBulkCancel").onclick = closeBulk;
+$("bulkBg").addEventListener("click", e => { if(e.target === $("bulkBg")) closeBulk(); });
+$("btnBulkFile").onclick = () => $("bulkFile").click();
+$("bulkFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if(!f) return;
+  $("bulkText").value = await f.text();
+  e.target.value = "";
+});
+
+function splitCsvLine(line, delim){
+  const out = []; let cur = "", inQ = false;
+  for(let i=0;i<line.length;i++){
+    const ch = line[i];
+    if(inQ){
+      if(ch === '"' && line[i+1] === '"'){ cur += '"'; i++; }
+      else if(ch === '"'){ inQ = false; }
+      else cur += ch;
+    }else{
+      if(ch === '"') inQ = true;
+      else if(ch === delim){ out.push(cur); cur = ""; }
+      else cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map(x => x.trim());
+}
+function normGender(v){
+  v = String(v||"").trim().toLowerCase();
+  if(["m","male","brother","bro","b","tangata"].includes(v)) return "M";
+  if(["f","female","sister","sis","s","fefine"].includes(v)) return "F";
+  return "";
+}
+function normDate(v){
+  v = String(v||"").trim();
+  if(!v) return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  const mdY = v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(mdY){
+    let [,mo,da,yr] = mdY;
+    if(yr.length === 2) yr = (Number(yr) > 40 ? "19" : "20") + yr;
+    return `${yr}-${String(mo).padStart(2,"0")}-${String(da).padStart(2,"0")}`;
+  }
+  const d = new Date(v);
+  return isNaN(d) ? "" : d.toISOString().slice(0,10);
+}
+const HEADER_MAP = [
+  [/^(full\s*)?name$/,"name"],[/gender|sex/,"gender"],[/birth|dob/,"birthdate"],
+  [/phone|cell|mobile/,"phone"],[/e-?mail/,"email"],[/school|work|occupation/,"school"],
+  [/activity/,"activity"],[/mission/,"mission"],[/calling/,"calling"],[/note/,"notes"],
+  [/priesthood/,"priesthood"],[/recommend/,"recommend"],[/institute/,"institute"]
+];
+function mapHeader(h){
+  h = String(h||"").trim().toLowerCase();
+  for(const [re,key] of HEADER_MAP) if(re.test(h)) return key;
+  return null;
+}
+function normEnum(key, v){
+  v = String(v||"").trim().toLowerCase();
+  if(!v) return null;
+  const dicts = {
+    activity:{active:"active","semi":"semi","semi-active":"semi","less":"less","less active":"less","less-active":"less",unknown:"unknown",dnc:"dnc","do not contact":"dnc"},
+    mission:{preparing:"preparing",prep:"preparing",papers:"papers",called:"called",serving:"serving",rm:"returned",returned:"returned","returned missionary":"returned","not planning":"notplanning",none:"none"},
+    priesthood:{none:"none",deacon:"deacon",teacher:"teacher",priest:"priest",elder:"elder"},
+    recommend:{none:"none",limited:"limited","limited-use":"limited",full:"full",active:"full",expired:"expired"},
+    institute:{no:"no","not enrolled":"no",enrolled:"enrolled",yes:"enrolled",completed:"completed"}
+  };
+  return dicts[key] ? (dicts[key][v] ?? null) : null;
+}
+function parseBulk(text){
+  const lines = text.split(/\r?\n/).map(l => l.replace(/\u00a0/g," ")).filter(l => l.trim());
+  if(!lines.length) return {rows:[], note:"Nothing to parse."};
+  const delim = lines[0].includes("\t") ? "\t" : (lines[0].includes(",") ? "," : null);
+  // Plain name list
+  if(!delim){
+    return {rows: lines.map(n => ({...DEFAULTS, name:n.trim()})), note:"Parsed as a plain name list."};
+  }
+  const first = splitCsvLine(lines[0], delim);
+  const headerKeys = first.map(mapHeader);
+  const hasHeader = headerKeys.some(k => k === "name");
+  let rows = [], note = "";
+  if(hasHeader){
+    note = "Header row detected: " + headerKeys.map((k,i) => k || `(skipped: ${first[i]})`).join(", ");
+    rows = lines.slice(1).map(line => {
+      const cells = splitCsvLine(line, delim);
+      const m = {...DEFAULTS};
+      headerKeys.forEach((k,i) => {
+        if(!k) return;
+        let v = cells[i] ?? "";
+        if(k === "gender"){ const g = normGender(v); if(g) m.gender = g; }
+        else if(k === "birthdate"){ m.birthdate = normDate(v); }
+        else if(["activity","mission","priesthood","recommend","institute"].includes(k)){
+          const e = normEnum(k, v); if(e !== null) m[k] = e;
+        }
+        else m[k] = String(v).trim();
+      });
+      return m;
+    }).filter(m => m.name);
+  }else{
+    note = "No header row — columns read as Name, Birthdate, Phone, Email.";
+    rows = lines.map(line => {
+      const c = splitCsvLine(line, delim);
+      return {...DEFAULTS, name:(c[0]||"").trim(), birthdate:normDate(c[1]), phone:(c[2]||"").trim(), email:(c[3]||"").trim()};
+    }).filter(m => m.name);
+  }
+  return {rows, note};
+}
+$("btnBulkPreview").onclick = () => {
+  const {rows, note} = parseBulk($("bulkText").value);
+  bulkParsed = rows;
+  const existing = new Set(members.map(m => String(m.name||"").toLowerCase()));
+  const dupes = rows.filter(r => existing.has(r.name.toLowerCase())).length;
+  $("bulkPreview").innerHTML = rows.length
+    ? `<strong style="color:var(--gold)">${rows.length} records ready.</strong> ${esc(note)}${dupes ? ` <span style="color:var(--coral)">${dupes} match names already on the record and will be skipped.</span>` : ""}<br>First few: ${esc(rows.slice(0,5).map(r => r.name).join(" · "))}`
+    : `<span style="color:var(--coral)">Couldn't find any names. ${esc(note)}</span>`;
+  $("btnBulkGo").disabled = !rows.length;
+};
+$("btnBulkGo").onclick = async () => {
+  if(!bulkParsed.length) return;
+  const existing = new Set(members.map(m => String(m.name||"").toLowerCase()));
+  const toAdd = bulkParsed.filter(r => !existing.has(r.name.toLowerCase()));
+  if(!toAdd.length){ toast("All of those names are already on the record."); return; }
+  $("btnBulkGo").disabled = true;
+  try{
+    for(let i=0;i<toAdd.length;i+=400){
+      const batch = db.batch();
+      toAdd.slice(i,i+400).forEach(m => batch.set(db.collection(COL_MEMBERS).doc(), {...m, importedAt:new Date().toISOString()}));
+      await batch.commit();
+    }
+    toast(`Imported ${toAdd.length} YSA${bulkParsed.length - toAdd.length ? ` (${bulkParsed.length - toAdd.length} duplicates skipped)` : ""}.`);
+    closeBulk();
+  }catch(e){ toast("Import failed: " + e.message); $("btnBulkGo").disabled = false; }
+};
 
 /* ---------------- toast + render root ---------------- */
 let toastTimer = null;
