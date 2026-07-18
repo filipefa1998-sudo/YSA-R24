@@ -35,7 +35,8 @@
   --font-display:"Fraunces",Georgia,serif;
   --font-body:"Public Sans",-apple-system,system-ui,sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+button,a,.chip,.card,tbody tr{touch-action:manipulation}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--ink);
@@ -244,6 +245,58 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
   border-radius:10px;padding:10px 18px;font-size:13.5px;z-index:80;display:none;max-width:90vw;
 }
 
+
+/* ================= MOBILE ================= */
+.mcards{display:none}
+@media (max-width:760px){
+  input,select,textarea{font-size:16px}          /* stop iOS focus zoom */
+  h2.sec{font-size:21px}
+  main{padding:16px 12px 96px}                    /* room for bottom nav */
+  /* Bottom tab bar */
+  nav.tabs{
+    position:fixed;left:0;right:0;bottom:0;top:auto;z-index:50;
+    background:rgba(16,27,48,.97);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);margin:0;max-width:none;
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom));
+    display:flex;justify-content:space-around;gap:0;
+  }
+  nav.tabs button{
+    flex:1;padding:9px 2px;font-size:10.5px;letter-spacing:.02em;
+    border-bottom:none;border-top:2.5px solid transparent;border-radius:0;
+  }
+  nav.tabs button.active{border-top-color:var(--gold);border-bottom:none}
+  .app-bar{padding:10px 12px}
+  .app-bar .who{display:none}
+  /* Members: swap table for cards */
+  .table-wrap{display:none}
+  .mcards{display:block}
+  .toolbar .btn{flex:1;min-width:130px}
+  .chips{gap:6px}
+  .chip{padding:7px 13px;font-size:13px}          /* bigger touch targets */
+  /* Modal: near-fullscreen sheet */
+  .modal-bg{padding:0;align-items:stretch}
+  .modal{max-width:none;border-radius:16px 16px 0 0;margin:auto 0 0;max-height:96dvh;overflow-y:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .m-actions .btn{padding:13px 18px}
+  .toast{bottom:calc(70px + env(safe-area-inset-bottom))}
+  .rep-stats{grid-template-columns:repeat(2,1fr)}
+  .kpi-tiles{grid-template-columns:repeat(2,1fr)}
+  .donut-wrap{justify-content:center}
+  .hist-form{grid-template-columns:1fr}
+  .dash-foot{padding-bottom:8px}
+}
+/* Member mobile cards */
+.mcard{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:12px;
+  padding:13px 14px;margin-bottom:10px;cursor:pointer;
+}
+.mcard:active{background:#14223c}
+.mcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mcard .nm{font-weight:700;font-size:15.5px}
+.mcard .age{font-family:var(--font-display);color:var(--gold);font-size:15px;flex:none}
+.mcard .line{color:var(--cream-dim);font-size:12.5px;margin:3px 0 7px}
+.mcard .pills{display:flex;flex-wrap:wrap;gap:5px}
+@media print{.mcards{display:none !important}.table-wrap{display:block !important}}
+
 /* ---------- Print ---------- */
 @media print{
   body{background:#fff;color:#111;font-size:12px}
@@ -258,6 +311,15 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
   .pill{border:1px solid #999;background:#fff !important;color:#111 !important}
   main{max-width:none;padding:0}
   .rep-stat .n{color:#111}
+  .kpi-card,.kpi-tile{background:#fff;border-color:#bbb;color:#111}
+  .kpi-card h3{color:#111}
+  .kpi-tile .big,.agebars .abn{color:#111}
+  .kpi-tile .cap,.prog .pl,.agebars .abl,.legend{color:#444}
+  .prog .pl strong{color:#111}
+  .prog .track{background:#eee;border-color:#ccc}
+  svg text{fill:#111 !important}
+  .report.focus{background:#fff;border:2px solid #b8862e}
+  .report.focus h3{color:#111}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
@@ -343,6 +405,7 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
     </table>
     <div class="empty" id="tblEmpty" style="display:none">No one matches this view. Clear filters or add a YSA.</div>
   </div>
+  <div class="mcards" id="mCards"></div>
 </section>
 
 <!-- ===== Meeting Review ===== -->
@@ -720,7 +783,7 @@ function attachData(){
   unsubHistory = db.collection(COL_HISTORY).onSnapshot(snap => {
     history = snap.docs.map(d => ({id:d.id, ...d.data()}));
     history.sort((a,b) => String(b.date||"").localeCompare(String(a.date||"")));
-    renderHistory();
+    renderHistory(); renderReview();
   }, err => toast("History error: " + err.message));
 }
 
@@ -843,6 +906,34 @@ function renderTable(){
       <td>${flags||"—"}</td>
     </tr>`;
   }).join("");
+  $("mCards").innerHTML = list.length ? list.map(m => {
+    const a = ageOf(m);
+    const act = m.activity==="active" ? pill("Active","p-ok")
+      : m.activity==="semi" ? pill("Semi","p-gold")
+      : m.activity==="dnc" ? pill("DNC","p-dim")
+      : pill(LABELS.activity[m.activity]||"—","p-warn");
+    const bits = [
+      LABELS.attends[m.attends] ? "⛪ "+LABELS.attends[m.attends] : "",
+      m.mission && m.mission!=="none" ? "✈ "+LABELS.mission[m.mission] : "",
+      m.gender==="M" && m.priesthood!=="na" ? LABELS.priesthood[m.priesthood] : "",
+      m.calling ? "📋 "+m.calling : ""
+    ].filter(Boolean).join(" · ");
+    const xtra = [
+      m.recommend!=="none" ? pill(LABELS.recommend[m.recommend], ["expired","limitedexp"].includes(m.recommend)?"p-warn":m.recommend==="full"?"p-ok":"p-teal") : "",
+      m.nextOrd!=="none" ? pill("Next: "+LABELS.nextOrd[m.nextOrd],"p-teal") : "",
+      m.institute==="enrolled" ? pill("Institute","p-teal") : "",
+      m.focus==="yes" ? pill("Focus 5","p-gold") : "",
+      m.flag==="yes" ? pill("Follow-up","p-warn") : "",
+      agingOutSoon(m) ? pill(agedOut(m)?"Aged out (36+)":"Aging out at 35","p-warn") : "",
+      m.status==="convert" ? pill("New convert","p-teal") : "",
+      m.status==="friend" ? pill("Friend","p-teal") : ""
+    ].filter(Boolean).join(" ");
+    return `<div class="mcard" onclick="openEdit('${m.id}')">
+      <div class="top"><span class="nm">${esc(m.name)}</span><span class="age">${a ?? "—"}</span></div>
+      <div class="line">${displayTitle(m)}${m.school ? " · "+esc(m.school) : ""}${bits ? "<br>"+esc(bits).replace(/⛪/g,"⛪").replace(/✈/g,"✈") : ""}</div>
+      <div class="pills">${act} ${xtra}</div>
+    </div>`;
+  }).join("") : "";
 }
 
 /* ---------------- add / edit modal ---------------- */
@@ -1103,14 +1194,14 @@ function donutSVG(segments, size){
   segments.forEach(seg => {
     if(!seg.value) return;
     const len = seg.value/total*c;
-    parts += `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="${seg.color}" stroke-width="24"
+    parts += `<circle r="${r}" cx="${cx}" cy="${cy}" style="fill:none;stroke:${seg.color}" stroke-width="24"
       stroke-dasharray="${Math.max(len-2,0.5)} ${c-Math.max(len-2,0.5)}" stroke-dashoffset="${off}"></circle>`;
     off -= len;
   });
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img">
-    ${total ? parts : `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="var(--ink-3)" stroke-width="24"/>`}
-    <text x="${cx}" y="${cy-3}" text-anchor="middle" fill="var(--cream)" font-family="var(--font-display)" font-size="26" font-weight="700">${total}</text>
-    <text x="${cx}" y="${cy+16}" text-anchor="middle" fill="var(--cream-dim)" font-size="10" letter-spacing="1">TOTAL</text>
+    ${total ? parts : `<circle r="${r}" cx="${cx}" cy="${cy}" style="fill:none;stroke:var(--ink-3)" stroke-width="24"/>`}
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" style="fill:var(--cream);font-family:var(--font-display);font-size:26px;font-weight:700">${total}</text>
+    <text x="${cx}" y="${cy+16}" text-anchor="middle" style="fill:var(--cream-dim);font-size:10px;letter-spacing:1px">TOTAL</text>
   </svg>`;
 }
 function donutCard(title, segments){
