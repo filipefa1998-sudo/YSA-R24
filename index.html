@@ -9,7 +9,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="YSA Record">
-<title>YSA Ward Record — Riverton 24th</title>
+<title>YSA Ward Record — Riverton 24th Tongan Ward</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,720&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,23 +47,28 @@ body{
 }
 ::selection{background:var(--horizon-deep);color:var(--cream)}
 
-/* ---------- Tapa horizon band (signature) ---------- */
+/* ---------- Ngatu band (Tongan tapa triangle motif) ---------- */
 .tapa-band{
-  height:10px;width:100%;
-  background:
-    repeating-linear-gradient(90deg,
-      var(--gold) 0 14px, transparent 14px 20px,
-      var(--horizon) 20px 26px, transparent 26px 40px);
-  opacity:.85;
+  height:16px;width:100%;
+  background-color:var(--ink-2);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M0 0 L16 0 L0 16 Z' fill='%23e3b34f'/%3E%3Cpath d='M16 0 L32 0 L32 16 Z' fill='%2346c2b5'/%3E%3Cpath d='M0 16 L0 32 L16 32 Z' fill='%2346c2b5'/%3E%3Cpath d='M32 16 L32 32 L16 32 Z' fill='%23e3b34f'/%3E%3C/svg%3E");
+  background-size:16px 16px;
+  border-bottom:1px solid var(--line);
+}
+.ngatu-edge{
+  height:7px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M0 0 L16 0 L0 16 Z' fill='%23e3b34f'/%3E%3Cpath d='M16 0 L32 0 L32 16 Z' fill='%232a8d84'/%3E%3Cpath d='M0 16 L0 32 L16 32 Z' fill='%232a8d84'/%3E%3Cpath d='M32 16 L32 32 L16 32 Z' fill='%23e3b34f'/%3E%3C/svg%3E");
+  background-size:14px 14px;opacity:.9;border-radius:3px;margin-bottom:12px;
 }
 
 /* ---------- Auth gate ---------- */
 #authView{max-width:420px;margin:0 auto;padding:9vh 22px 40px;text-align:center}
 .auth-mark{
-  width:74px;height:74px;margin:0 auto 18px;border-radius:50%;
-  border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  width:78px;height:78px;margin:0 auto 18px;border-radius:50%;
+  border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;
   font-family:var(--font-display);font-size:26px;color:var(--gold);
   background:radial-gradient(circle at 30% 25%, #1d2f52, var(--ink-2));
+  box-shadow:0 0 0 6px var(--ink), 0 0 0 8px var(--horizon-deep);
 }
 #authView h1{font-family:var(--font-display);font-weight:650;font-size:29px;letter-spacing:.2px;margin-bottom:4px}
 #authView .sub{color:var(--cream-dim);font-size:13.5px;margin-bottom:6px}
@@ -113,6 +121,33 @@ section.tab{display:none}
 section.tab.active{display:block}
 h2.sec{font-family:var(--font-display);font-weight:650;font-size:24px;margin-bottom:4px}
 p.sec-sub{color:var(--cream-dim);font-size:13.5px;margin-bottom:18px}
+
+
+/* ---------- KPIs ---------- */
+.kpi-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kpi-tile{background:linear-gradient(160deg,var(--ink-3),var(--ink-2));border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer}
+.kpi-tile:hover{border-color:var(--gold-deep)}
+.kpi-tile .big{font-family:var(--font-display);font-size:30px;font-weight:720;color:var(--gold);line-height:1.1}
+.kpi-tile .big.teal{color:var(--horizon)} .kpi-tile .big.warn{color:var(--coral)} .kpi-tile .big.good{color:var(--ok)}
+.kpi-tile .cap{font-size:11px;color:var(--cream-dim);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.kpi-card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.kpi-card h3{font-family:var(--font-display);font-size:16px;color:var(--gold);margin-bottom:12px}
+.donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.legend{list-style:none;font-size:12.5px;flex:1;min-width:120px}
+.legend li{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}
+.legend .dot{width:10px;height:10px;border-radius:3px;flex:none}
+.legend .lv{margin-left:auto;font-family:var(--font-display);font-weight:650}
+.prog{margin-bottom:12px;cursor:pointer}
+.prog .pl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--cream-dim);margin-bottom:4px}
+.prog .pl strong{color:var(--cream)}
+.prog .track{height:9px;background:var(--ink-3);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.prog .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--horizon),var(--gold))}
+.agebars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:8px}
+.agebars .ab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:default}
+.agebars .abbar{width:100%;max-width:44px;background:linear-gradient(180deg,var(--horizon),var(--horizon-deep));border-radius:4px 4px 0 0;min-height:2px}
+.agebars .abn{font-family:var(--font-display);font-size:13px;color:var(--horizon)}
+.agebars .abl{font-size:10.5px;color:var(--cream-dim)}
 
 /* ---------- Dashboard ---------- */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
@@ -232,7 +267,8 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
 <div id="authView">
   <div class="auth-mark">YSA</div>
   <h1>YSA Ward Record</h1>
-  <div class="sub">Riverton 24th Ward — Young Single Adults</div>
+  <div class="sub" style="font-family:var(--font-display);font-size:15px;color:var(--gold)">Mālō e lelei!</div>
+  <div class="sub">Riverton 24th Tongan Ward — Young Single Adults</div>
   <div class="confid">Held in confidence — authorized leaders only</div>
   <div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username"></div>
   <div class="field"><label for="authPass">Password</label><input id="authPass" type="password" autocomplete="current-password"></div>
@@ -252,6 +288,7 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
   </div>
   <nav class="tabs" id="tabsNav">
     <button data-tab="dash" class="active">Dashboard</button>
+    <button data-tab="kpis">KPIs</button>
     <button data-tab="members">Members</button>
     <button data-tab="review">Meeting Review</button>
     <button data-tab="plan">Plan of Action</button>
@@ -263,18 +300,29 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
 <main>
 <!-- ===== Dashboard ===== -->
 <section class="tab active" id="tab-dash">
+  <div class="ngatu-edge" aria-hidden="true"></div>
   <h2 class="sec">Committee Overview</h2>
-  <p class="sec-sub">Tap any card to open the matching list of young single adults.</p>
+  <p class="sec-sub">Riverton 24th Tongan Ward — tap any card to open the matching list.</p>
   <div class="cards" id="dashCards"></div>
   <div class="dash-foot no-print">
     <a href="https://filipefa1998-sudo.github.io/focus5-tracker/" target="_blank" rel="noopener">Open the Focus 5 Tracker ↗</a>
   </div>
 </section>
 
+<!-- ===== KPIs ===== -->
+<section class="tab" id="tab-kpis">
+  <div class="ngatu-edge" aria-hidden="true"></div>
+  <h2 class="sec">KPIs &amp; Charts</h2>
+  <p class="sec-sub">The state of the Riverton 24th Tongan Ward YSA at a glance. Tap tiles and legends to open the matching list.</p>
+  <button class="btn btn-ghost no-print" onclick="window.print()" style="margin-bottom:14px">Print / Save as PDF</button>
+  <div class="kpi-tiles" id="kpiTiles"></div>
+  <div class="kpi-grid" id="kpiCards"></div>
+</section>
+
 <!-- ===== Members ===== -->
 <section class="tab" id="tab-members">
   <h2 class="sec">Members</h2>
-  <p class="sec-sub">Every YSA (18–35, unmarried) on ward records or living in boundaries — plus friends of the ward.</p>
+  <p class="sec-sub">Every YSA (18–35, unmarried) of the Riverton 24th Tongan Ward — on the records, in the boundaries, or a friend of the ward.</p>
   <div class="toolbar no-print">
     <button class="btn btn-teal" id="btnAdd">+ Add YSA</button>
     <button class="btn btn-gold" id="btnBulk" style="width:auto">Bulk Import</button>
@@ -765,7 +813,7 @@ function renderTable(){
     const flags = [
       m.flag==="yes" ? pill("Follow-up","p-warn") : "",
       m.focus==="yes" ? pill("Focus 5","p-gold") : "",
-      agingOutSoon(m) ? pill(agedOut(m)?"Aged out":"Aging out","p-warn") : "",
+      agingOutSoon(m) ? pill(agedOut(m)?"Aged out (36+)":"Aging out at 35","p-warn") : "",
       m.status==="convert" ? pill("New convert","p-teal") : "",
       m.status==="friend" ? pill("Friend","p-teal") : ""
     ].filter(Boolean).join(" ");
@@ -1016,6 +1064,121 @@ function downloadFile(name, content, type){
 }
 
 
+
+/* ---------------- KPIs ---------------- */
+const KPI_COLORS = ["var(--gold)","var(--horizon)","var(--coral)","var(--ok)","#8f9bd4","#c88ad0","#7a8aa8"];
+function pct(n, d){ return d ? Math.round(n/d*100) : 0; }
+function donutSVG(segments, size){
+  size = size || 150;
+  const total = segments.reduce((a,x)=>a+x.value,0);
+  const r = (size/2) - 16, c = 2*Math.PI*r, cx = size/2, cy = size/2;
+  let off = c*0.25, parts = "";
+  segments.forEach(seg => {
+    if(!seg.value) return;
+    const len = seg.value/total*c;
+    parts += `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="${seg.color}" stroke-width="24"
+      stroke-dasharray="${Math.max(len-2,0.5)} ${c-Math.max(len-2,0.5)}" stroke-dashoffset="${off}"></circle>`;
+    off -= len;
+  });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img">
+    ${total ? parts : `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="var(--ink-3)" stroke-width="24"/>`}
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" fill="var(--cream)" font-family="var(--font-display)" font-size="26" font-weight="700">${total}</text>
+    <text x="${cx}" y="${cy+16}" text-anchor="middle" fill="var(--cream-dim)" font-size="10" letter-spacing="1">TOTAL</text>
+  </svg>`;
+}
+function donutCard(title, segments){
+  const total = segments.reduce((a,x)=>a+x.value,0);
+  return `<div class="kpi-card"><h3>${title}</h3><div class="donut-wrap">
+    ${donutSVG(segments)}
+    <ul class="legend">${segments.map(s => `
+      <li ${s.filter?`onclick="goToMembers('${s.filter}')"`:""}>
+        <span class="dot" style="background:${s.color}"></span>${s.label}
+        <span class="lv">${s.value}${total?` <span style="color:var(--cream-dim);font-weight:400;font-size:11px">(${pct(s.value,total)}%)</span>`:""}</span>
+      </li>`).join("")}</ul>
+  </div></div>`;
+}
+function progRow(label, n, d, filter){
+  return `<div class="prog" ${filter?`onclick="goToMembers('${filter}')"`:""}>
+    <div class="pl"><span>${label}</span><strong>${n} / ${d} · ${pct(n,d)}%</strong></div>
+    <div class="track"><div class="fill" style="width:${pct(n,d)}%"></div></div>
+  </div>`;
+}
+function renderKpis(){
+  const T = members.length;
+  const inScope = members.filter(m => m.records !== "moved");
+  const S = inScope.length;
+  const active = count(m=>m.activity==="active");
+  const tiles = [
+    {n:T, cap:"Total YSA", cls:"", f:"all"},
+    {n:pct(active,T)+"%", cap:"Active", cls:"good", f:"all"},
+    {n:count(m=>["preparing","papers","called"].includes(m.mission)), cap:"Mission pipeline", cls:"teal", f:"prep"},
+    {n:count(m=>m.mission==="serving"), cap:"Serving now", cls:"good", f:"serving"},
+    {n:count(m=>m.institute==="enrolled"), cap:"In institute", cls:"teal", f:"institute"},
+    {n:count(m=>m.flag==="yes"), cap:"Follow-up flags", cls:"warn", f:"flag"},
+    {n:count(m=>agingOutSoon(m)&&!agedOut(m)), cap:"Aging out at 35", cls:"warn", f:"aging"},
+    {n:count(m=>agedOut(m)), cap:"Aged out (36+)", cls:"warn", f:"aging"}
+  ];
+  $("kpiTiles").innerHTML = tiles.map(t =>
+    `<div class="kpi-tile" onclick="goToMembers('${t.f}')"><div class="big ${t.cls}">${t.n}</div><div class="cap">${t.cap}</div></div>`).join("");
+
+  const A = k => count(m=>m.activity===k);
+  const AT = k => count(m=>m.attends===k);
+  const MI = k => count(m=>m.mission===k);
+  const cards = [];
+  cards.push(donutCard("Activity", [
+    {label:"Active", value:A("active"), color:"var(--ok)"},
+    {label:"Semi-active", value:A("semi"), color:"var(--gold)"},
+    {label:"Less active", value:A("less"), color:"var(--coral)", filter:"less"},
+    {label:"Unknown", value:A("unknown"), color:"#7a8aa8", filter:"less"},
+    {label:"Do not contact", value:A("dnc"), color:"#4a5875"}
+  ]));
+  cards.push(donutCard("Where They Worship", [
+    {label:"This ward", value:AT("this"), color:"var(--gold)"},
+    {label:"YSA ward", value:AT("ysa"), color:"var(--horizon)", filter:"attendysa"},
+    {label:"Another unit", value:AT("other"), color:"#8f9bd4"},
+    {label:"Not attending", value:AT("none"), color:"var(--coral)", filter:"notattending"},
+    {label:"Unknown", value:AT("unknown"), color:"#7a8aa8"}
+  ]));
+  cards.push(donutCard("Mission Status", [
+    {label:"Preparing / papers / called", value:MI("preparing")+MI("papers")+MI("called"), color:"var(--horizon)", filter:"prep"},
+    {label:"Serving", value:MI("serving"), color:"var(--ok)", filter:"serving"},
+    {label:"Returned", value:MI("returned"), color:"var(--gold)", filter:"rm"},
+    {label:"Not planning", value:MI("notplanning"), color:"#7a8aa8"},
+    {label:"—", value:MI("none"), color:"#4a5875"}
+  ]));
+  cards.push(donutCard("Sisters & Brothers", [
+    {label:"Sisters", value:count(m=>m.gender==="F"), color:"var(--gold)"},
+    {label:"Brothers", value:count(m=>m.gender==="M"), color:"var(--horizon)"}
+  ]));
+  cards.push(donutCard("Temple Recommends", [
+    {label:"Full (endowed, active)", value:count(m=>m.recommend==="full"), color:"var(--ok)"},
+    {label:"Limited-use", value:count(m=>m.recommend==="limited"), color:"var(--horizon)"},
+    {label:"Expired", value:count(m=>m.recommend==="expired"), color:"var(--coral)", filter:"expired"},
+    {label:"None", value:count(m=>m.recommend==="none"), color:"#4a5875"}
+  ]));
+  // Age distribution
+  const bands = [["18–20",18,20],["21–23",21,23],["24–26",24,26],["27–29",27,29],["30–32",30,32],["33–35",33,35],["36+",36,200]];
+  const bandCounts = bands.map(([l,lo,hi]) => members.filter(m => { const a = ageOf(m); return a !== null && a >= lo && a <= hi; }).length);
+  const noBirth = members.filter(m => ageOf(m) === null).length;
+  const maxB = Math.max(1, ...bandCounts);
+  cards.push(`<div class="kpi-card"><h3>Age Distribution</h3>
+    <div class="agebars">${bands.map(([l],i) => `
+      <div class="ab"><div class="abn">${bandCounts[i]||""}</div>
+      <div class="abbar" style="height:${Math.round(bandCounts[i]/maxB*95)}%${bands[i][1]>=35?";background:linear-gradient(180deg,var(--coral),#a34531)":""}"></div>
+      <div class="abl">${l}</div></div>`).join("")}</div>
+    ${noBirth ? `<div style="font-size:11.5px;color:var(--cream-dim);margin-top:8px">${noBirth} without a birthdate on file — add birthdates so aging-out flags fire automatically.</div>` : ""}
+  </div>`);
+  // Coverage
+  cards.push(`<div class="kpi-card"><h3>Coverage &amp; Belonging</h3>
+    ${progRow("Have a calling", count(m=>String(m.calling||"").trim()&&m.records!=="moved"), S, "nocall")}
+    ${progRow("Ministering assigned", count(m=>m.ministering==="yes"&&m.records!=="moved"), S)}
+    ${progRow("Institute enrolled or completed", count(m=>["enrolled","completed"].includes(m.institute)), S, "noinst")}
+    ${progRow("Active temple recommend", count(m=>["full","limited"].includes(m.recommend)), S)}
+    ${progRow("Contact info on file", count(m=>(m.phone||m.email)&&m.records!=="moved"), S)}
+  </div>`);
+  $("kpiCards").innerHTML = cards.join("");
+}
+
 /* ---------------- bulk import ---------------- */
 let bulkParsed = [];
 $("btnBulk").onclick = () => { bulkParsed = []; $("bulkText").value = ""; $("bulkPreview").textContent = ""; $("btnBulkGo").disabled = true; $("bulkBg").classList.add("open"); };
@@ -1160,7 +1323,7 @@ function toast(msg){
   const t = $("toast"); t.textContent = msg; t.style.display = "block";
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = "none", 3200);
 }
-function renderAll(){ renderDash(); renderChips(); renderTable(); renderReview(); renderPlan(); renderHistory(); }
+function renderAll(){ renderDash(); renderKpis(); renderChips(); renderTable(); renderReview(); renderPlan(); renderHistory(); }
 renderChips();
 </script>
 </body>
