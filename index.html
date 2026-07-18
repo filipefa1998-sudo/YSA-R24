@@ -195,6 +195,8 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
 /* ---------- Reports ---------- */
 .report{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
 .report h3{font-family:var(--font-display);font-size:17px;color:var(--gold);margin-bottom:8px}
+.report.focus{border:1.5px solid var(--gold);background:linear-gradient(160deg,#1c2846,var(--ink-2))}
+.report.focus h3{font-size:19px}
 .report ul{list-style:none}
 .report li{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;cursor:pointer}
 .report li:last-child{border-bottom:none}
@@ -346,11 +348,12 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
 <!-- ===== Meeting Review ===== -->
 <section class="tab" id="tab-review">
   <h2 class="sec">Meeting Review</h2>
-  <p class="sec-sub">Tap any name to edit. Use Print for a ward-council or bishopric-youth-discussion copy.</p>
+  <p class="sec-sub">Ward council brief keeps it to one page: names only, no notes. Switch modes for the committee working copy, then Print / Save as PDF.</p>
   <div class="no-print" style="margin-bottom:6px">
     <div class="seg" id="reviewSeg">
-      <button data-mode="full" class="active">Full report (stats + everyone)</button>
-      <button data-mode="prio">Priorities + follow-up only</button>
+      <button data-mode="council" class="active">Ward council brief</button>
+      <button data-mode="prio">Priorities + follow-up</button>
+      <button data-mode="full">Full report (everyone)</button>
     </div>
     <button class="btn btn-ghost" onclick="window.print()" style="margin-left:8px">Print / Save as PDF</button>
   </div>
@@ -496,8 +499,9 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
         <select id="fRecommend">
           <option value="none">None</option>
           <option value="limited">Limited-use (active)</option>
+          <option value="limitedexp">Limited-use (expired)</option>
           <option value="full">Full (endowed, active)</option>
-          <option value="expired">Expired</option>
+          <option value="expired">Full (expired)</option>
         </select></div>
       <div class="field"><label>Recommend renewal</label><input id="fRenewal" type="date"></div>
       <div class="field"><label>Next ordinance</label>
@@ -510,7 +514,7 @@ td .mut{color:var(--cream-dim);font-size:11.5px}
           <option value="sealing">Sealing</option>
         </select></div>
       <div class="field"><label>Temple prep class</label>
-        <select id="fTemplePrep"><option value="no">Not enrolled</option><option value="yes">Enrolled</option><option value="needs">Needs outreach</option></select></div>
+        <select id="fTemplePrep"><option value="na">— (already endowed)</option><option value="no">Not enrolled</option><option value="yes">Enrolled</option><option value="needs">Needs outreach</option></select></div>
       <div class="field"><label>Institute</label>
         <select id="fInstitute"><option value="no">Not enrolled</option><option value="enrolled">Enrolled</option><option value="completed">Completed</option></select></div>
       <div class="field"><label>Calling</label><input id="fCalling" placeholder="e.g., Sunday School teacher"></div>
@@ -592,7 +596,7 @@ let history = [];      // {id, name, type, date, note}
 let activeFilter = "all";
 let searchTerm = "";
 let editingId = null;
-let reviewMode = "full";
+let reviewMode = "council";
 let unsubMembers = null, unsubHistory = null;
 
 const $ = id => document.getElementById(id);
@@ -622,10 +626,10 @@ const LABELS = {
   records:{ward:"This ward",ysa:"YSA ward",pending:"Transfer pending",moved:"Moved out"},
   mission:{none:"—",preparing:"Preparing",papers:"Papers in",called:"Call received",serving:"Serving",returned:"RM",notplanning:"Not planning"},
   priesthood:{na:"—",none:"None",deacon:"Deacon",teacher:"Teacher",priest:"Priest",elder:"Elder"},
-  recommend:{none:"None",limited:"Limited-use",full:"Full (active)",expired:"Expired"},
+  recommend:{none:"None",limited:"Limited-use",limitedexp:"Limited-use (expired)",full:"Full (active)",expired:"Full (expired)"},
   nextOrd:{none:"—",baptism:"Baptism",aaronic:"Aaronic PH",melchizedek:"Melchizedek PH",endowment:"Endowment",sealing:"Sealing"},
   institute:{no:"Not enrolled",enrolled:"Enrolled",completed:"Completed"},
-  templePrep:{no:"Not enrolled",yes:"Enrolled",needs:"Needs outreach"},
+  templePrep:{na:"—",no:"Not enrolled",yes:"Enrolled",needs:"Needs outreach"},
   histType:{baptism:"Baptism & confirmation",aaronic:"Aaronic Priesthood",melchizedek:"Melchizedek Priesthood",endowment:"Endowment",sealing:"Sealing",mission_call:"Mission call",mission_depart:"Entered mission field",mission_return:"Returned with honor",recommend:"Recommend issued/renewed",institute:"Institute",calling:"Calling extended",reactivation:"Returned to activity",other:"Other"}
 };
 
@@ -643,7 +647,7 @@ const FILTERS = [
   ["needsmelch","Need Melchizedek Priesthood", m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)],
   ["nextend","Next ordinance: Endowment", m=>m.nextOrd==="endowment"],
   ["nextseal","Next ordinance: Sealing", m=>m.nextOrd==="sealing"],
-  ["expired","Recommend expired", m=>m.recommend==="expired"],
+  ["expired","Recommend expired", m=>["expired","limitedexp"].includes(m.recommend)],
   ["templeprep","In temple prep class", m=>m.templePrep==="yes"],
   ["templeout","Temple class — needs outreach", m=>m.templePrep==="needs"],
   ["institute","Institute enrolled", m=>m.institute==="enrolled"],
@@ -761,7 +765,7 @@ function renderDash(){
       ["Endowed, recommend active", count(m=>m.recommend==="full"), "good", "all"],
       ["Next: Endowment", count(m=>m.nextOrd==="endowment"), "teal", "nextend"],
       ["Need Melchizedek PH", count(m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)), "warn", "needsmelch"],
-      ["Recommends expired", count(m=>m.recommend==="expired"), "warn", "expired"],
+      ["Recommends expired", count(m=>["expired","limitedexp"].includes(m.recommend)), "warn", "expired"],
       ["Temple prep — needs outreach", count(m=>m.templePrep==="needs"), "warn", "templeout"]
     ]},
     {title:"Institute & Callings", rows:[
@@ -823,6 +827,7 @@ function renderTable(){
       : pill(LABELS.activity[m.activity]||"—","p-warn");
     const rec = m.recommend==="full" ? pill("Full","p-ok")
       : m.recommend==="limited" ? pill("Limited","p-teal")
+      : m.recommend==="limitedexp" ? pill("Limited (exp)","p-warn")
       : m.recommend==="expired" ? pill("Expired","p-warn") : pill("None","p-dim");
     return `<tr onclick="openEdit('${m.id}')">
       <td><span class="nm">${esc(m.name)}</span><br><span class="mut">${displayTitle(m)} · ${esc(m.school||"")}</span></td>
@@ -921,11 +926,34 @@ function renderReview(){
     ["Follow-up flags", count(m=>m.flag==="yes")],
     ["Aging out", count(m=>agingOutSoon(m))]
   ];
-  const prioritySections = buildPlanSections();
   let html = `<div class="rep-stats">${stats.map(s =>
     `<div class="rep-stat"><div class="n">${s[1]}</div><div class="l">${s[0]}</div></div>`).join("")}</div>`;
+
+  if(reviewMode === "council"){
+    // One-page brief: names only, no notes or sensitive detail.
+    const nameOnly = m => `<li onclick="openEdit('${m.id}')"><span><strong>${esc(m.name)}</strong> <span class="mut">(${ageOf(m) ?? "—"})</span></span></li>`;
+    const focus = members.filter(m=>m.focus==="yes");
+    const flags = members.filter(m=>m.flag==="yes" && m.focus!=="yes");
+    const pipeline = members.filter(m=>["preparing","papers","called"].includes(m.mission));
+    const aging = members.filter(m=>agingOutSoon(m));
+    const cutoff = new Date(Date.now() - 60*24*3600*1000).toISOString().slice(0,10);
+    const wins = history.filter(h => (h.date||"") >= cutoff).slice(0,8);
+    html += `<div class="report focus"><div class="ngatu-edge" aria-hidden="true"></div><h3>Focus 5 — this week's priority</h3>
+      <ul>${focus.length ? focus.map(nameOnly).join("") : '<li><span class="mut">No Focus 5 selected yet — mark them on each record.</span></li>'}</ul></div>`;
+    if(flags.length) html += `<div class="report"><h3>Also needs follow-up</h3><ul>${flags.map(nameOnly).join("")}</ul></div>`;
+    if(pipeline.length) html += `<div class="report"><h3>Mission pipeline</h3><ul>${pipeline.map(m =>
+      `<li onclick="openEdit('${m.id}')"><span><strong>${esc(m.name)}</strong></span><span class="why">${esc(LABELS.mission[m.mission])}</span></li>`).join("")}</ul></div>`;
+    if(aging.length) html += `<div class="report"><h3>Aging out — transition plan</h3><ul>${aging.map(nameOnly).join("")}</ul></div>`;
+    if(wins.length) html += `<div class="report"><h3>Wins — last 60 days</h3><ul>${wins.map(h =>
+      `<li><span><strong>${esc(h.name)}</strong> — ${esc(LABELS.histType[h.type]||h.type)}</span><span class="why">${esc(h.date||"")}</span></li>`).join("")}</ul></div>`;
+    html += `<p style="font-size:11.5px;color:var(--cream-dim);margin-top:6px">Held in confidence — Riverton 24th Tongan Ward council use only.</p>`;
+    $("reviewBody").innerHTML = html;
+    return;
+  }
+
+  const prioritySections = buildPlanSections();
   html += prioritySections.filter(s => s.items.length).map(s => `
-    <div class="report"><h3>${s.title}</h3><ul>${s.items.map(x => personLine(x.m, x.why)).join("")}</ul></div>`).join("");
+    <div class="report ${s.cls||""}"><h3>${s.title}</h3><ul>${s.items.map(x => personLine(x.m, x.why)).join("")}</ul></div>`).join("");
   if(reviewMode === "full"){
     html += `<div class="report"><h3>Everyone on the record</h3><ul>${
       members.map(m => personLine(m,
@@ -935,16 +963,15 @@ function renderReview(){
   }
   $("reviewBody").innerHTML = html || `<div class="empty">Add YSA records to build this report.</div>`;
 }
-
 /* ---------------- plan of action ---------------- */
 function buildPlanSections(){
   return [
+    {title:"Focus 5 — priority names", cls:"focus", items: members.filter(m=>m.focus==="yes").map(m=>({m, why:"Focus 5 — takes priority this week"}))},
     {title:"Follow-up flags — act this week", items: members.filter(m=>m.flag==="yes").map(m=>({m, why: m.notes ? m.notes.slice(0,80) : "Flagged for follow-up"}))},
-    {title:"Focus 5", items: members.filter(m=>m.focus==="yes").map(m=>({m, why:"On the Focus 5 list"}))},
     {title:"Mission prep pipeline", items: members.filter(m=>["preparing","papers","called"].includes(m.mission)).map(m=>({m, why: LABELS.mission[m.mission]}))},
     {title:"Next ordinance ready", items: members.filter(m=>m.nextOrd && m.nextOrd!=="none").map(m=>({m, why:"Next: "+LABELS.nextOrd[m.nextOrd]+(m.templePrep==="yes"?" · in temple prep":m.templePrep==="needs"?" · invite to temple prep":"")}))},
     {title:"Brothers needing Melchizedek Priesthood", items: members.filter(m=>m.gender==="M" && !["elder","na"].includes(m.priesthood) && !agedOut(m)).map(m=>({m, why:"Currently: "+(LABELS.priesthood[m.priesthood]||"—")}))},
-    {title:"Recommends expired", items: members.filter(m=>m.recommend==="expired").map(m=>({m, why: m.renewal ? "Expired — renewal noted "+m.renewal : "Expired"}))},
+    {title:"Recommends expired", items: members.filter(m=>["expired","limitedexp"].includes(m.recommend)).map(m=>({m, why: m.renewal ? "Expired — renewal noted "+m.renewal : "Expired"}))},
     {title:"Reactivation outreach", items: members.filter(m=>["less","unknown"].includes(m.activity) && m.records!=="moved" && m.activity!=="dnc").map(m=>({m, why: LABELS.activity[m.activity]+" · "+(LABELS.attends[m.attends]||"")}))},
     {title:"Not attending anywhere", items: members.filter(m=>m.attends==="none" && m.activity!=="dnc").map(m=>({m, why:"Invite back — "+(m.school||"see notes")}))},
     {title:"Institute invitations", items: members.filter(m=>m.institute==="no" && m.activity==="active").map(m=>({m, why:"Active but not enrolled in institute"}))},
@@ -957,7 +984,7 @@ function buildPlanSections(){
 function renderPlan(){
   const secs = buildPlanSections().filter(s => s.items.length);
   $("planBody").innerHTML = secs.length ? secs.map(s => `
-    <div class="report"><h3>${s.title} <span class="mut" style="font-family:var(--font-body);font-size:12px">(${s.items.length})</span></h3>
+    <div class="report ${s.cls||""}">${s.cls==="focus"?'<div class="ngatu-edge" aria-hidden="true"></div>':''}<h3>${s.title} <span class="mut" style="font-family:var(--font-body);font-size:12px">(${s.items.length})</span></h3>
     <ul>${s.items.map(x => personLine(x.m, x.why)).join("")}</ul></div>`).join("")
     : `<div class="empty">Nothing needs action right now — or add records to build the plan.</div>`;
 }
@@ -1153,7 +1180,8 @@ function renderKpis(){
   cards.push(donutCard("Temple Recommends", [
     {label:"Full (endowed, active)", value:count(m=>m.recommend==="full"), color:"var(--ok)"},
     {label:"Limited-use", value:count(m=>m.recommend==="limited"), color:"var(--horizon)"},
-    {label:"Expired", value:count(m=>m.recommend==="expired"), color:"var(--coral)", filter:"expired"},
+    {label:"Limited-use (expired)", value:count(m=>m.recommend==="limitedexp"), color:"#c88ad0", filter:"expired"},
+    {label:"Full (expired)", value:count(m=>m.recommend==="expired"), color:"var(--coral)", filter:"expired"},
     {label:"None", value:count(m=>m.recommend==="none"), color:"#4a5875"}
   ]));
   // Age distribution
@@ -1247,7 +1275,7 @@ function normEnum(key, v){
     activity:{active:"active","semi":"semi","semi-active":"semi","less":"less","less active":"less","less-active":"less",unknown:"unknown",dnc:"dnc","do not contact":"dnc"},
     mission:{preparing:"preparing",prep:"preparing",papers:"papers",called:"called",serving:"serving",rm:"returned",returned:"returned","returned missionary":"returned","not planning":"notplanning",none:"none"},
     priesthood:{none:"none",deacon:"deacon",teacher:"teacher",priest:"priest",elder:"elder"},
-    recommend:{none:"none",limited:"limited","limited-use":"limited",full:"full",active:"full",expired:"expired"},
+    recommend:{none:"none",limited:"limited","limited-use":"limited","limited expired":"limitedexp","limited-use expired":"limitedexp",full:"full",active:"full",expired:"expired"},
     institute:{no:"no","not enrolled":"no",enrolled:"enrolled",yes:"enrolled",completed:"completed"}
   };
   return dicts[key] ? (dicts[key][v] ?? null) : null;
